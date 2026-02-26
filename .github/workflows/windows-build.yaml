@@ -1,4 +1,4 @@
-# ============================================================
+i# ============================================================
 #  QLog Windows Build — GitHub Actions
 #  Fork: HB9VQQ/QLog
 #
@@ -62,25 +62,18 @@ jobs:
         Expand-Archive $zip -DestinationPath C:\
         Rename-Item "C:\hamlib-w64-${{ env.HAMLIB_VERSION }}" C:\hamlib
 
-        # Ensure MSVC import library exists
         $msvc = "C:\hamlib\lib\msvc"
         if (!(Test-Path $msvc)) { New-Item -ItemType Directory $msvc | Out-Null }
         if (!(Test-Path "$msvc\libhamlib-4.lib")) {
           $def = Get-ChildItem C:\hamlib -Recurse -Filter "libhamlib-4.def" | Select -First 1
           if ($def) {
             $dest = "$msvc\libhamlib-4.def"
-            if ($def.FullName -ne $dest) {
-              Copy-Item $def.FullName $dest
-            }
+            if ($def.FullName -ne $dest) { Copy-Item $def.FullName $dest }
             Push-Location $msvc
             lib /machine:X64 /def:libhamlib-4.def /out:libhamlib-4.lib
             Pop-Location
-          } else {
-            Write-Warning "No .def file found — check Hamlib package"
           }
         }
-        Write-Host "Hamlib contents:"
-        Get-ChildItem C:\hamlib -Recurse -Include *.lib,*.def,*.dll | Select FullName
 
     # ── 5. pthreads + zlib via fresh vcpkg clone ─────────
     - name: Install vcpkg dependencies
@@ -90,9 +83,6 @@ jobs:
         cd /d C:\vcpkg
         call bootstrap-vcpkg.bat
         vcpkg install pthreads:x64-windows zlib:x64-windows
-        echo === Installed ===
-        dir /b C:\vcpkg\installed\x64-windows\include
-        dir /b C:\vcpkg\installed\x64-windows\lib\*.lib
 
     # ── 6. Build QtKeychain from source ──────────────────
     - name: Build QtKeychain
@@ -107,8 +97,6 @@ jobs:
           -DCMAKE_INSTALL_PREFIX=C:\qtkeychain
         cmake --build build --config Release
         cmake --install build
-        echo QtKeychain installed at C:\qtkeychain
-        dir /s /b C:\qtkeychain\*.h C:\qtkeychain\*.lib C:\qtkeychain\*.dll
 
     # ── 7. Locate OpenSSL ────────────────────────────────
     - name: Locate OpenSSL
@@ -121,86 +109,93 @@ jobs:
         )
         $ssl = $candidates | Where-Object { Test-Path $_ } | Select -First 1
         if (!$ssl) {
-          Write-Host "OpenSSL not found in standard paths, installing via choco..."
           choco install openssl -y --no-progress
           $ssl = $candidates | Where-Object { Test-Path $_ } | Select -First 1
         }
         if ($ssl) {
           echo "OPENSSL_DIR=$ssl" >> $env:GITHUB_ENV
           Write-Host "OpenSSL at: $ssl"
-          Get-ChildItem "$ssl\bin" -Filter "*.dll" | Select Name
         } else {
-          Write-Warning "OpenSSL not found — SSL features may not work"
           echo "OPENSSL_DIR=" >> $env:GITHUB_ENV
         }
 
-    # ── 7b. Download sqlite3 source for Qt/Windows build ─
+    # ── 7b. Download sqlite3 source ──────────────────────
     - name: Download sqlite3 source
       shell: pwsh
       run: |
         $qtPrefix = & qmake -query QT_INSTALL_PREFIX
-        Write-Host "QT_INSTALL_PREFIX: $qtPrefix"
         $sqliteDir = Join-Path (Split-Path $qtPrefix) "Src\qtbase\src\3rdparty\sqlite"
         New-Item -ItemType Directory $sqliteDir -Force | Out-Null
-        $url = "https://www.sqlite.org/2024/sqlite-amalgamation-3450100.zip"
-        Invoke-WebRequest $url -OutFile sqlite.zip
+        Invoke-WebRequest "https://www.sqlite.org/2024/sqlite-amalgamation-3450100.zip" -OutFile sqlite.zip
         Expand-Archive sqlite.zip -DestinationPath C:\sqlite-tmp
         $src = Get-ChildItem C:\sqlite-tmp -Directory | Select -First 1
         Copy-Item "$($src.FullName)\sqlite3.c" $sqliteDir\
         Copy-Item "$($src.FullName)\sqlite3.h" $sqliteDir\
-        Write-Host "sqlite3 source placed at: $sqliteDir"
+        Write-Host "sqlite3 at: $sqliteDir"
 
-    # ── 7c. Install OmniRig v1 + v2 (COM type libraries) ─
-    #    QLog #import reads type libraries from these EXEs
-    - name: Install OmniRig
+    # ── 7c. Setup OmniRig type libraries ─────────────────
+    #    Download .tlb from VE3NEA/OmniRig GitHub, patch
+    #    source #import to reference .tlb instead of installed EXEs
+    - name: Setup OmniRig type libraries
       shell: pwsh
       run: |
-        # OmniRig v1 — silent installer from dxatlas.com
-        Write-Host "Installing OmniRig v1..."
-        Invoke-WebRequest "http://www.dxatlas.com/OmniRig/OmniRigSetup.exe" -OutFile OmniRigSetup.exe
-        Start-Process -FilePath .\OmniRigSetup.exe -ArgumentList "/VERYSILENT","/SUPPRESSMSGBOXES","/NORESTART" -Wait
-        Write-Host "OmniRig v1 installed:"
-        Get-ChildItem "C:\Program Files (x86)\Afreet\OmniRig" -ErrorAction SilentlyContinue | Select Name
+        $tlbDir = "C:\omnirig-tlb"
+        New-Item -ItemType Directory $tlbDir -Force | Out-Null
 
-        # OmniRig v2 — zip from HB9RYZ
-        Write-Host "Installing OmniRig v2..."
-        Invoke-WebRequest "https://www.hb9ryz.ch/downloads/install_omnirigv21.zip" -OutFile omnirigv2.zip
-        Expand-Archive omnirigv2.zip -DestinationPath C:\omnirigv2-tmp
+        # Download OmniRig v1 type library from VE3NEA GitHub
+        Invoke-WebRequest "https://raw.githubusercontent.com/VE3NEA/OmniRig/master/OmniRig.tlb" -OutFile "$tlbDir\OmniRig.tlb"
+        Write-Host "v1 .tlb: $((Get-Item "$tlbDir\OmniRig.tlb").Length) bytes"
 
-        # Find the exe and place it where QLog expects it
-        $v2dir = "C:\Program Files (x86)\Omni-Rig V2"
-        New-Item -ItemType Directory $v2dir -Force | Out-Null
-
-        # Search for omnirig2.exe in extracted content
-        $v2exe = Get-ChildItem C:\omnirigv2-tmp -Recurse -Filter "omnirig2.exe" | Select -First 1
-        if ($v2exe) {
-          Copy-Item $v2exe.FullName "$v2dir\omnirig2.exe"
-          Write-Host "OmniRig v2 exe placed at: $v2dir"
-        } else {
-          # If it's an installer, try running it silently
-          $installer = Get-ChildItem C:\omnirigv2-tmp -Recurse -Filter "*.exe" | Select -First 1
-          if ($installer) {
-            Write-Host "Running OmniRig v2 installer: $($installer.FullName)"
-            Start-Process -FilePath $installer.FullName -ArgumentList "/VERYSILENT","/SUPPRESSMSGBOXES","/NORESTART" -Wait
+        # Try to get OmniRig v2 from HB9RYZ
+        # Download and run installer silently to get the exe with embedded type library
+        try {
+          Invoke-WebRequest "https://www.hb9ryz.ch/downloads/install_omnirigv21.zip" -OutFile omnirigv2.zip
+          Expand-Archive omnirigv2.zip -DestinationPath C:\omnirigv2-tmp -Force
+          $v2installer = Get-ChildItem C:\omnirigv2-tmp -Recurse -Filter "*.exe" | Select -First 1
+          if ($v2installer) {
+            Start-Process -FilePath $v2installer.FullName -ArgumentList "/VERYSILENT","/SUPPRESSMSGBOXES","/NORESTART" -Wait -ErrorAction SilentlyContinue
+            Start-Sleep -Seconds 3
           }
+        } catch {
+          Write-Host "Could not download OmniRig v2: $_"
         }
 
-        # Debug: verify both are in place
-        Write-Host "=== OmniRig v1 ==="
-        Get-ChildItem "C:\Program Files (x86)\Afreet\OmniRig\*.exe" -ErrorAction SilentlyContinue | Select FullName
-        Write-Host "=== OmniRig v2 ==="
-        Get-ChildItem "C:\Program Files (x86)\Omni-Rig V2\*.exe" -ErrorAction SilentlyContinue | Select FullName
-        # Also check if v2 installed elsewhere
-        Get-ChildItem "C:\Program Files (x86)" -Directory -Filter "*mni*" -ErrorAction SilentlyContinue | Select FullName
+        # Check if v2 got installed
+        $v2exe = Get-ChildItem "C:\Program Files (x86)" -Recurse -Filter "omnirig2.exe" -ErrorAction SilentlyContinue | Select -First 1
+
+        # Patch v1 source: use .tlb instead of .exe
+        $v1file = "rig\drivers\OmnirigRigDrv.cpp"
+        $v1content = Get-Content $v1file -Raw
+        $v1content = $v1content.Replace(
+          'C:\\Program Files (x86)\\Afreet\\OmniRig\\OmniRig.exe',
+          'C:\\omnirig-tlb\\OmniRig.tlb')
+        Set-Content $v1file $v1content -NoNewline
+        Write-Host "Patched v1:"
+        Select-String '#import' $v1file | ForEach-Object { $_.Line.Trim() }
+
+        # Patch v2 source: use installed exe if available, else use v1 .tlb as fallback
+        $v2file = "rig\drivers\Omnirigv2RigDrv.cpp"
+        $v2content = Get-Content $v2file -Raw
+        if ($v2exe) {
+          $v2path = $v2exe.FullName -replace '\\','\\'
+          Write-Host "Using installed v2 exe: $($v2exe.FullName)"
+        } else {
+          # Use v1 .tlb — the COM interfaces are the same (IOmniRigX)
+          $v2path = 'C:\\omnirig-tlb\\OmniRig.tlb'
+          Write-Host "Using v1 .tlb as fallback for v2"
+        }
+        $v2content = $v2content.Replace(
+          'C:\\Program Files (x86)\\Omni-Rig V2\\omnirig2.exe',
+          $v2path)
+        Set-Content $v2file $v2content -NoNewline
+        Write-Host "Patched v2:"
+        Select-String '#import' $v2file | ForEach-Object { $_.Line.Trim() }
 
     # ── 8. Build QLog ────────────────────────────────────
     - name: Build QLog
       shell: cmd
       run: |
-        :: Determine QtKeychain include path
         set "QTKC_INC=C:\qtkeychain\include"
-
-        :: vcpkg installed tree
         set "VCPKG_INC=C:\vcpkg\installed\x64-windows\include"
         set "VCPKG_LIB=C:\vcpkg\installed\x64-windows\lib"
 
@@ -228,26 +223,19 @@ jobs:
         $deploy = "C:\qlog-deploy"
         New-Item -ItemType Directory $deploy -Force | Out-Null
 
-        # Main binary
         $exe = Get-ChildItem build -Recurse -Filter "qlog.exe" | Select -First 1
         if (!$exe) { Write-Error "qlog.exe not found!"; exit 1 }
         Copy-Item $exe.FullName $deploy\
-        Write-Host "Found qlog.exe at: $($exe.FullName)"
 
-        # Hamlib DLLs
         Copy-Item C:\hamlib\bin\*.dll $deploy\
-
-        # QtKeychain DLL
         Copy-Item C:\qtkeychain\bin\*.dll $deploy\ -ErrorAction SilentlyContinue
         Copy-Item C:\qtkeychain\lib\*.dll $deploy\ -ErrorAction SilentlyContinue
 
-        # vcpkg runtime DLLs (zlib, pthreads)
         $vcpkgBin = "C:\vcpkg\installed\x64-windows\bin"
         if (Test-Path $vcpkgBin) {
           Copy-Item "$vcpkgBin\*.dll" $deploy\ -ErrorAction SilentlyContinue
         }
 
-        # OpenSSL DLLs
         if ($env:OPENSSL_DIR -and (Test-Path $env:OPENSSL_DIR)) {
           $sslBin = Join-Path $env:OPENSSL_DIR "bin"
           if (Test-Path $sslBin) {
@@ -256,7 +244,6 @@ jobs:
           }
         }
 
-        # windeployqt — copies all needed Qt DLLs, plugins, etc.
         Push-Location $deploy
         windeployqt --release --no-translations qlog.exe
         Pop-Location
@@ -268,7 +255,6 @@ jobs:
     - name: Create Installer
       shell: pwsh
       run: |
-        # Find binarycreator from Qt IFW tools
         $bc = $null
         if ($env:IQTA_TOOLS) {
           $bc = Get-ChildItem $env:IQTA_TOOLS -Recurse -Filter "binarycreator.exe" -ErrorAction SilentlyContinue | Select -First 1
@@ -277,20 +263,15 @@ jobs:
           $bc = Get-ChildItem "$env:RUNNER_TOOL_CACHE" -Recurse -Filter "binarycreator.exe" -ErrorAction SilentlyContinue | Select -First 1
         }
         if (!$bc) {
-          Write-Warning "binarycreator not found — skipping installer, portable ZIP still available"
+          Write-Warning "binarycreator not found — skipping installer"
           exit 0
         }
-        Write-Host "Found binarycreator at: $($bc.FullName)"
 
-        # Copy installer template from repo
         Copy-Item installer -Destination installer-build -Recurse
-
-        # Fill the data directory with deployed files
         $pkgData = "installer-build\packages\de.dl2ic.qlog\data"
         New-Item -ItemType Directory $pkgData -Force | Out-Null
         Copy-Item C:\qlog-deploy\* $pkgData\ -Recurse
 
-        # Build the installer EXE
         & $bc.FullName -f `
           -c installer-build\config\config.xml `
           -p installer-build\packages `
@@ -298,8 +279,6 @@ jobs:
 
         if (Test-Path qlog-installer.exe) {
           Write-Host "Installer created: qlog-installer.exe"
-        } else {
-          Write-Warning "Installer creation failed"
         }
 
     # ── 11. Upload artifacts ─────────────────────────────
