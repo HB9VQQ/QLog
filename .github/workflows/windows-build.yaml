@@ -68,10 +68,13 @@ jobs:
         $msvc = "C:\hamlib\lib\msvc"
         if (!(Test-Path $msvc)) { New-Item -ItemType Directory $msvc | Out-Null }
         if (!(Test-Path "$msvc\libhamlib-4.lib")) {
-          # Copy .def from wherever Hamlib puts it
+          # Copy .def from wherever Hamlib puts it (skip if already in msvc)
           $def = Get-ChildItem C:\hamlib -Recurse -Filter "libhamlib-4.def" | Select -First 1
           if ($def) {
-            Copy-Item $def.FullName "$msvc\libhamlib-4.def"
+            $dest = "$msvc\libhamlib-4.def"
+            if ($def.FullName -ne $dest) {
+              Copy-Item $def.FullName $dest
+            }
             Push-Location $msvc
             lib /machine:X64 /def:libhamlib-4.def /out:libhamlib-4.lib
             Pop-Location
