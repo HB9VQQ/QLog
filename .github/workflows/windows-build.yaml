@@ -135,29 +135,63 @@ jobs:
         }
 
     # ── 7b. Download sqlite3 source for Qt/Windows build ─
-    #    QLog.pro on win32 compiles sqlite3.c from Qt Src tree.
-    #    install-qt-action doesn't install sources, so we fetch it.
     - name: Download sqlite3 source
       shell: pwsh
       run: |
-        # QLog expects: $$[QT_INSTALL_PREFIX]/../Src/qtbase/src/3rdparty/sqlite/
         $qtPrefix = & qmake -query QT_INSTALL_PREFIX
         Write-Host "QT_INSTALL_PREFIX: $qtPrefix"
         $sqliteDir = Join-Path (Split-Path $qtPrefix) "Src\qtbase\src\3rdparty\sqlite"
         New-Item -ItemType Directory $sqliteDir -Force | Out-Null
-
-        # Download sqlite amalgamation
         $url = "https://www.sqlite.org/2024/sqlite-amalgamation-3450100.zip"
         Invoke-WebRequest $url -OutFile sqlite.zip
         Expand-Archive sqlite.zip -DestinationPath C:\sqlite-tmp
-
-        # Copy the files QLog needs
         $src = Get-ChildItem C:\sqlite-tmp -Directory | Select -First 1
         Copy-Item "$($src.FullName)\sqlite3.c" $sqliteDir\
         Copy-Item "$($src.FullName)\sqlite3.h" $sqliteDir\
-
         Write-Host "sqlite3 source placed at: $sqliteDir"
-        Get-ChildItem $sqliteDir
+
+    # ── 7c. Install OmniRig v1 + v2 (COM type libraries) ─
+    #    QLog #import reads type libraries from these EXEs
+    - name: Install OmniRig
+      shell: pwsh
+      run: |
+        # OmniRig v1 — silent installer from dxatlas.com
+        Write-Host "Installing OmniRig v1..."
+        Invoke-WebRequest "http://www.dxatlas.com/OmniRig/OmniRigSetup.exe" -OutFile OmniRigSetup.exe
+        Start-Process -FilePath .\OmniRigSetup.exe -ArgumentList "/VERYSILENT","/SUPPRESSMSGBOXES","/NORESTART" -Wait
+        Write-Host "OmniRig v1 installed:"
+        Get-ChildItem "C:\Program Files (x86)\Afreet\OmniRig" -ErrorAction SilentlyContinue | Select Name
+
+        # OmniRig v2 — zip from HB9RYZ
+        Write-Host "Installing OmniRig v2..."
+        Invoke-WebRequest "https://www.hb9ryz.ch/downloads/install_omnirigv21.zip" -OutFile omnirigv2.zip
+        Expand-Archive omnirigv2.zip -DestinationPath C:\omnirigv2-tmp
+
+        # Find the exe and place it where QLog expects it
+        $v2dir = "C:\Program Files (x86)\Omni-Rig V2"
+        New-Item -ItemType Directory $v2dir -Force | Out-Null
+
+        # Search for omnirig2.exe in extracted content
+        $v2exe = Get-ChildItem C:\omnirigv2-tmp -Recurse -Filter "omnirig2.exe" | Select -First 1
+        if ($v2exe) {
+          Copy-Item $v2exe.FullName "$v2dir\omnirig2.exe"
+          Write-Host "OmniRig v2 exe placed at: $v2dir"
+        } else {
+          # If it's an installer, try running it silently
+          $installer = Get-ChildItem C:\omnirigv2-tmp -Recurse -Filter "*.exe" | Select -First 1
+          if ($installer) {
+            Write-Host "Running OmniRig v2 installer: $($installer.FullName)"
+            Start-Process -FilePath $installer.FullName -ArgumentList "/VERYSILENT","/SUPPRESSMSGBOXES","/NORESTART" -Wait
+          }
+        }
+
+        # Debug: verify both are in place
+        Write-Host "=== OmniRig v1 ==="
+        Get-ChildItem "C:\Program Files (x86)\Afreet\OmniRig\*.exe" -ErrorAction SilentlyContinue | Select FullName
+        Write-Host "=== OmniRig v2 ==="
+        Get-ChildItem "C:\Program Files (x86)\Omni-Rig V2\*.exe" -ErrorAction SilentlyContinue | Select FullName
+        # Also check if v2 installed elsewhere
+        Get-ChildItem "C:\Program Files (x86)" -Directory -Filter "*mni*" -ErrorAction SilentlyContinue | Select FullName
 
     # ── 8. Build QLog ────────────────────────────────────
     - name: Build QLog
