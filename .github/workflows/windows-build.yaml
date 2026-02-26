@@ -165,7 +165,6 @@ jobs:
       run: |
         :: Determine QtKeychain include path
         set "QTKC_INC=C:\qtkeychain\include"
-        if exist "C:\qtkeychain\include\qt6keychain" set "QTKC_INC=C:\qtkeychain\include\qt6keychain"
 
         :: vcpkg installed tree
         set "VCPKG_INC=C:\vcpkg\installed\x64-windows\include"
