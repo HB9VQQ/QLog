@@ -99,7 +99,7 @@ jobs:
       shell: cmd
       run: |
         git clone --depth 1 https://github.com/frankosterfeld/qtkeychain.git C:\qtkeychain-src
-        cd C:\qtkeychain-src
+        cd /d C:\qtkeychain-src
         cmake -B build -G "NMake Makefiles" ^
           -DCMAKE_BUILD_TYPE=Release ^
           -DBUILD_WITH_QT6=ON ^
