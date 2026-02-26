@@ -82,33 +82,17 @@ jobs:
         Write-Host "Hamlib contents:"
         Get-ChildItem C:\hamlib -Recurse -Include *.lib,*.def,*.dll | Select FullName
 
-    # ── 5. pthreads + zlib via vcpkg (manifest mode) ─────
+    # ── 5. pthreads + zlib via fresh vcpkg clone ─────────
     - name: Install vcpkg dependencies
-      shell: pwsh
+      shell: cmd
       run: |
-        New-Item -ItemType Directory C:\deps -Force | Out-Null
-        Set-Location C:\deps
-
-        # Get the builtin-baseline from the runner's vcpkg checkout
-        $baseline = (git -C $env:VCPKG_ROOT rev-parse HEAD).Trim()
-        Write-Host "vcpkg baseline: $baseline"
-
-        # Create manifest with baseline
-        @{
-          dependencies = @("pthreads", "zlib")
-          "builtin-baseline" = $baseline
-        } | ConvertTo-Json | Set-Content vcpkg.json
-
-        Write-Host "vcpkg.json:"
-        Get-Content vcpkg.json
-
-        # Install
-        & "$env:VCPKG_ROOT\vcpkg" install --triplet x64-windows
-
-        Write-Host "=== Installed include ==="
-        Get-ChildItem "C:\deps\vcpkg_installed\x64-windows\include" -ErrorAction SilentlyContinue | Select Name
-        Write-Host "=== Installed lib ==="
-        Get-ChildItem "C:\deps\vcpkg_installed\x64-windows\lib\*.lib" -ErrorAction SilentlyContinue | Select Name
+        git clone --depth 1 https://github.com/microsoft/vcpkg.git C:\vcpkg
+        cd /d C:\vcpkg
+        call bootstrap-vcpkg.bat
+        vcpkg install pthreads:x64-windows zlib:x64-windows
+        echo === Installed ===
+        dir /b C:\vcpkg\installed\x64-windows\include
+        dir /b C:\vcpkg\installed\x64-windows\lib\*.lib
 
     # ── 6. Build QtKeychain from source ──────────────────
     - name: Build QtKeychain
@@ -158,9 +142,9 @@ jobs:
         set "QTKC_INC=C:\qtkeychain\include"
         if exist "C:\qtkeychain\include\qt6keychain" set "QTKC_INC=C:\qtkeychain\include\qt6keychain"
 
-        :: vcpkg manifest installed tree
-        set "VCPKG_INC=C:\deps\vcpkg_installed\x64-windows\include"
-        set "VCPKG_LIB=C:\deps\vcpkg_installed\x64-windows\lib"
+        :: vcpkg installed tree
+        set "VCPKG_INC=C:\vcpkg\installed\x64-windows\include"
+        set "VCPKG_LIB=C:\vcpkg\installed\x64-windows\lib"
 
         mkdir build
         cd build
@@ -200,7 +184,7 @@ jobs:
         Copy-Item C:\qtkeychain\lib\*.dll $deploy\ -ErrorAction SilentlyContinue
 
         # vcpkg runtime DLLs (zlib, pthreads)
-        $vcpkgBin = "C:\deps\vcpkg_installed\x64-windows\bin"
+        $vcpkgBin = "C:\vcpkg\installed\x64-windows\bin"
         if (Test-Path $vcpkgBin) {
           Copy-Item "$vcpkgBin\*.dll" $deploy\ -ErrorAction SilentlyContinue
         }
