@@ -1264,6 +1264,16 @@ void DxWidget::reloadSetting()
     FCT_IDENTIFICATION;
 
     moderegexp.setPattern(modeFilterRegExp());
+
+    /* When FT8/FT4 mode filters are unchecked, also exclude spots by
+     * frequency range as a safety net. DX cluster nodes often don't tag
+     * modes correctly, so frequency-based exclusion is more reliable.
+     * See: https://github.com/foldynl/QLog/issues/937 */
+    const QString &modePattern = moderegexp.pattern();
+    excludeFT8ByFreq = !modePattern.contains("|" + BandPlan::MODE_GROUP_STRING_FT8);
+    excludeFT4ByFreq = !modePattern.contains("|" + BandPlan::MODE_GROUP_STRING_FT4);
+    excludeFT2ByFreq = !modePattern.contains("|" + BandPlan::MODE_GROUP_STRING_FT2);
+
     contregexp.setPattern(contFilterRegExp());
     spottercontregexp.setPattern(spotterContFilterRegExp());
     bandregexp.setPattern(bandFilterRegExp());
@@ -1401,7 +1411,7 @@ bool DxWidget::isFilterEnabled() const
         || !dxMemberFilter.isEmpty()
         // || deduplicateSpots  // deduplication does not mean filtring.
         || spottercontregexp.pattern().count("|") != 7
-        || moderegexp.pattern().count("|") != 4
+        || moderegexp.pattern().count("|") != 6
         || BandPlan::bandsList(false, true).size() != bandregexp.pattern().count("|");
 }
 
@@ -1764,7 +1774,14 @@ void DxWidget::processDxSpot(const QString &spotter,
 
     emit newSpot(spot);
 
+    /* Frequency-based exclusion: catch FT8/FT4/FT2 spots that slipped through
+     * mode detection (blank mode, "DATA", wrong tag from cluster node) */
+    bool freqExcluded = (excludeFT8ByFreq && BandPlan::isInFT8FreqRange(spot.freq))
+                     || (excludeFT4ByFreq && BandPlan::isInFT4FreqRange(spot.freq))
+                     || (excludeFT2ByFreq && BandPlan::isInFT2FreqRange(spot.freq));
+
     if ( spot.modeGroupString.contains(moderegexp)
+         && !freqExcluded
          && spot.dxcc.cont.contains(contregexp)
          && spot.dxcc_spotter.cont.contains(spottercontregexp)
          && spot.band.contains(bandregexp)
@@ -1816,7 +1833,10 @@ BandPlan::BandPlanMode DxWidget::modeGroupFromComment(const QString &comment) co
         return BandPlan::BAND_MODE_FT8;
 
     if ( tokenizedComment.contains("FT4", Qt::CaseInsensitive) )
-        return BandPlan::BAND_MODE_DIGITAL;
+        return BandPlan::BAND_MODE_FT4;
+
+    if ( tokenizedComment.contains("FT2", Qt::CaseInsensitive) )
+        return BandPlan::BAND_MODE_FT2;
 
     if ( tokenizedComment.contains("MSK144", Qt::CaseInsensitive) )
         return BandPlan::BAND_MODE_DIGITAL;
@@ -1925,7 +1945,8 @@ void DxWidget::sotaRefFromComment(DxSpot &spot) const
     spot.containsSOTA = spot.comment.contains("SOTA", Qt::CaseInsensitive);
 
     if ( spot.comment.contains("FT8", Qt::CaseInsensitive)  // a false detection in case of TNX/FT8 comments
-        || spot.comment.contains("FT4",Qt::CaseInsensitive) )
+        || spot.comment.contains("FT4",Qt::CaseInsensitive)
+        || spot.comment.contains("FT2",Qt::CaseInsensitive) )
         return;
 
     spot.sotaRef = refFromComment(spot.comment, spot.containsSOTA,

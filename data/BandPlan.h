@@ -11,6 +11,8 @@ public:
     static const QString MODE_GROUP_STRING_CW;
     static const QString MODE_GROUP_STRING_DIGITAL;
     static const QString MODE_GROUP_STRING_FT8;
+    static const QString MODE_GROUP_STRING_FT4;
+    static const QString MODE_GROUP_STRING_FT2;
     static const QString MODE_GROUP_STRING_PHONE;
 
     enum BandPlanMode
@@ -19,6 +21,8 @@ public:
         BAND_MODE_CW,
         BAND_MODE_DIGITAL,
         BAND_MODE_FT8,
+        BAND_MODE_FT4,
+        BAND_MODE_FT2,
         BAND_MODE_LSB,
         BAND_MODE_USB,
         BAND_MODE_PHONE
@@ -37,6 +41,9 @@ public:
                                        const bool onlyEnabled = false);
     static const QString modeToDXCCModeGroup(const QString &mode);
     static const QString modeToModeGroup(const QString &mode);
+    static bool isInFT8FreqRange(double freqMHz);
+    static bool isInFT4FreqRange(double freqMHz);
+    static bool isInFT2FreqRange(double freqMHz);
     BandPlan();
 };
 

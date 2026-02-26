@@ -199,6 +199,9 @@ private:
     QTcpSocket* socket;
     Ui::DxWidget *ui;
     QRegularExpression moderegexp;
+    bool excludeFT8ByFreq;
+    bool excludeFT4ByFreq;
+    bool excludeFT2ByFreq;
     QRegularExpression contregexp;
     QRegularExpression spottercontregexp;
     QRegularExpression bandregexp;

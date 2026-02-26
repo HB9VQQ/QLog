@@ -1022,6 +1022,8 @@ QString LogParam::getDXCFilterModeRE()
             + BandPlan::MODE_GROUP_STRING_PHONE + "|"
             + BandPlan::MODE_GROUP_STRING_CW + "|"
             + BandPlan::MODE_GROUP_STRING_FT8 + "|"
+            + BandPlan::MODE_GROUP_STRING_FT4 + "|"
+            + BandPlan::MODE_GROUP_STRING_FT2 + "|"
             + BandPlan::MODE_GROUP_STRING_DIGITAL;
     return getParam("dxc/filter/dx/moderegexp", defaultValue).toString();
 }

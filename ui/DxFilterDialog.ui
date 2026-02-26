@@ -139,6 +139,32 @@
               </property>
              </widget>
             </item>
+            <item row="0" column="4">
+             <widget class="QCheckBox" name="ft4checkbox">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>FT4</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="5">
+             <widget class="QCheckBox" name="ft2checkbox">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>FT2</string>
+              </property>
+             </widget>
+            </item>
            </layout>
           </item>
          </layout>
@@ -472,6 +498,8 @@
   <tabstop>phonecheckbox</tabstop>
   <tabstop>digitalcheckbox</tabstop>
   <tabstop>ft8checkbox</tabstop>
+  <tabstop>ft4checkbox</tabstop>
+  <tabstop>ft2checkbox</tabstop>
   <tabstop>afcheckbox</tabstop>
   <tabstop>ancheckbox</tabstop>
   <tabstop>nacheckbox</tabstop>
