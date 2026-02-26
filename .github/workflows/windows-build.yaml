@@ -1,0 +1,219 @@
+# ============================================================
+#  QLog Windows Build — GitHub Actions
+#  Fork: HB9VQQ/QLog
+#
+#  Builds QLog for Windows (MSVC 2022 x64) and creates:
+#    - A portable ZIP (QLog-Portable-Windows)
+#    - A Qt IFW installer (QLog-Installer-Windows)
+#
+#  Triggers: push to master, or manual via Actions tab
+# ============================================================
+name: Windows Build
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:        # manual trigger button in Actions tab
+
+env:
+  QT_VERSION: '6.8.2'
+  HAMLIB_VERSION: '4.6.5'
+
+jobs:
+  build:
+    runs-on: windows-2022
+    timeout-minutes: 60
+
+    steps:
+    # ── 1. Checkout source ───────────────────────────────
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    # ── 2. MSVC 2022 x64 environment ────────────────────
+    - name: Setup MSVC
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
+
+    # ── 3. Install Qt 6 with required modules ───────────
+    #    webengine, charts, serialport, websockets,
+    #    webchannel, positioning + Qt IFW for installer
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: ${{ env.QT_VERSION }}
+        host: windows
+        target: desktop
+        arch: win64_msvc2022_64
+        modules: >-
+          qtwebengine qtcharts qtserialport
+          qtwebsockets qtwebchannel qtpositioning
+        tools: tools_ifw
+        cache: true
+
+    # ── 4. Download Hamlib w64 binary ────────────────────
+    - name: Download Hamlib
+      shell: pwsh
+      run: |
+        $zip = "hamlib-w64-${{ env.HAMLIB_VERSION }}.zip"
+        $url = "https://github.com/Hamlib/Hamlib/releases/download/${{ env.HAMLIB_VERSION }}/$zip"
+        Write-Host "Downloading $url"
+        Invoke-WebRequest $url -OutFile $zip
+        Expand-Archive $zip -DestinationPath C:\
+        Rename-Item "C:\hamlib-w64-${{ env.HAMLIB_VERSION }}" C:\hamlib
+
+        # Ensure MSVC import library exists
+        $msvc = "C:\hamlib\lib\msvc"
+        if (!(Test-Path $msvc)) { New-Item -ItemType Directory $msvc | Out-Null }
+        if (!(Test-Path "$msvc\libhamlib-4.lib")) {
+          # Copy .def from wherever Hamlib puts it
+          $def = Get-ChildItem C:\hamlib -Recurse -Filter "libhamlib-4.def" | Select -First 1
+          if ($def) {
+            Copy-Item $def.FullName "$msvc\libhamlib-4.def"
+            Push-Location $msvc
+            lib /machine:X64 /def:libhamlib-4.def /out:libhamlib-4.lib
+            Pop-Location
+          } else {
+            Write-Warning "No .def file found — check Hamlib package"
+          }
+        }
+        Write-Host "Hamlib ready at C:\hamlib"
+
+    # ── 5. pthreads + zlib via vcpkg (pre-installed on runner)
+    - name: Install vcpkg dependencies
+      shell: pwsh
+      run: |
+        & "$env:VCPKG_ROOT\vcpkg" install pthreads:x64-windows zlib:x64-windows
+
+    # ── 6. Build QtKeychain from source (uses our Qt) ────
+    - name: Build QtKeychain
+      shell: cmd
+      run: |
+        git clone --depth 1 https://github.com/frankosterfeld/qtkeychain.git C:\qtkeychain-src
+        cd C:\qtkeychain-src
+        cmake -B build -G "NMake Makefiles" ^
+          -DCMAKE_BUILD_TYPE=Release ^
+          -DBUILD_WITH_QT6=ON ^
+          -DCMAKE_PREFIX_PATH="%QT_ROOT_DIR%" ^
+          -DCMAKE_INSTALL_PREFIX=C:\qtkeychain
+        cmake --build build --config Release
+        cmake --install build
+        echo QtKeychain installed at C:\qtkeychain
+
+    # ── 7. Install OpenSSL for deployment ────────────────
+    - name: Install OpenSSL
+      shell: pwsh
+      run: |
+        choco install openssl -y --no-progress
+        # Find the install location
+        $ssl = "C:\Program Files\OpenSSL-Win64"
+        if (!(Test-Path $ssl)) { $ssl = "C:\Program Files\OpenSSL" }
+        echo "OPENSSL_DIR=$ssl" >> $env:GITHUB_ENV
+        Write-Host "OpenSSL at: $ssl"
+
+    # ── 8. Build QLog ────────────────────────────────────
+    - name: Build QLog
+      shell: cmd
+      run: |
+        mkdir build
+        cd build
+        qmake ..\QLog.pro -spec win32-msvc ^
+          "CONFIG+=release" ^
+          "HAMLIBINCLUDEPATH=C:\hamlib\include" ^
+          "HAMLIBLIBPATH=C:\hamlib\lib\msvc" ^
+          "HAMLIBVERSION_MAJOR=4" ^
+          "HAMLIBVERSION_MINOR=6" ^
+          "HAMLIBVERSION_PATCH=5" ^
+          "QTKEYCHAININCLUDEPATH=C:\qtkeychain\include" ^
+          "QTKEYCHAINLIBPATH=C:\qtkeychain\lib" ^
+          "PTHREADINCLUDEPATH=%VCPKG_ROOT%\packages\pthreads_x64-windows\include" ^
+          "PTHREADLIBPATH=%VCPKG_ROOT%\packages\pthreads_x64-windows\lib" ^
+          "ZLIBINCLUDEPATH=%VCPKG_ROOT%\packages\zlib_x64-windows\include" ^
+          "ZLIBLIBPATH=%VCPKG_ROOT%\packages\zlib_x64-windows\lib"
+        nmake
+
+    # ── 9. Package with windeployqt ──────────────────────
+    - name: Deploy
+      shell: pwsh
+      run: |
+        $deploy = "C:\qlog-deploy"
+        New-Item -ItemType Directory $deploy -Force | Out-Null
+
+        # Main binary
+        $exe = Get-ChildItem build -Recurse -Filter "qlog.exe" | Select -First 1
+        if (!$exe) { Write-Error "qlog.exe not found!"; exit 1 }
+        Copy-Item $exe.FullName $deploy\
+        Write-Host "Found qlog.exe at: $($exe.FullName)"
+
+        # Hamlib DLLs
+        Copy-Item C:\hamlib\bin\*.dll $deploy\
+
+        # QtKeychain DLL
+        Copy-Item C:\qtkeychain\bin\*.dll $deploy\ -ErrorAction SilentlyContinue
+        Copy-Item C:\qtkeychain\lib\*.dll $deploy\ -ErrorAction SilentlyContinue
+
+        # zlib DLL
+        Copy-Item "$env:VCPKG_ROOT\packages\zlib_x64-windows\bin\*.dll" $deploy\ -ErrorAction SilentlyContinue
+
+        # OpenSSL DLLs
+        $sslBin = Join-Path $env:OPENSSL_DIR "bin"
+        if (Test-Path $sslBin) {
+          Copy-Item "$sslBin\libssl*.dll"    $deploy\ -ErrorAction SilentlyContinue
+          Copy-Item "$sslBin\libcrypto*.dll" $deploy\ -ErrorAction SilentlyContinue
+        }
+
+        # windeployqt — copies all needed Qt DLLs, plugins, etc.
+        Push-Location $deploy
+        windeployqt --release --no-translations qlog.exe
+        Pop-Location
+
+        Write-Host "Deploy directory contents:"
+        Get-ChildItem $deploy | Format-Table Name, Length
+
+    # ── 10. Create Qt IFW installer ──────────────────────
+    - name: Create Installer
+      shell: pwsh
+      run: |
+        # Find binarycreator from Qt IFW tools
+        $bc = Get-ChildItem "$env:IQTA_TOOLS" -Recurse -Filter "binarycreator.exe" -ErrorAction SilentlyContinue | Select -First 1
+        if (!$bc) {
+          Write-Warning "binarycreator not found — skipping installer, portable ZIP still available"
+          exit 0
+        }
+
+        # Copy installer template from repo
+        Copy-Item installer -Destination installer-build -Recurse
+
+        # Fill the data directory with deployed files
+        $pkgData = "installer-build\packages\de.dl2ic.qlog\data"
+        New-Item -ItemType Directory $pkgData -Force | Out-Null
+        Copy-Item C:\qlog-deploy\* $pkgData\ -Recurse
+
+        # Build the installer EXE
+        & $bc.FullName -f `
+          -c installer-build\config\config.xml `
+          -p installer-build\packages `
+          qlog-installer.exe
+
+        if (Test-Path qlog-installer.exe) {
+          Write-Host "Installer created: qlog-installer.exe"
+        } else {
+          Write-Warning "Installer creation failed"
+        }
+
+    # ── 11. Upload artifacts ─────────────────────────────
+    - name: Upload Installer
+      if: ${{ hashFiles('qlog-installer.exe') != '' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: QLog-Installer-Windows
+        path: qlog-installer.exe
+
+    - name: Upload Portable
+      uses: actions/upload-artifact@v4
+      with:
+        name: QLog-Portable-Windows
+        path: C:\qlog-deploy\
+
