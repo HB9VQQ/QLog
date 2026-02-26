@@ -84,15 +84,31 @@ jobs:
 
     # ── 5. pthreads + zlib via vcpkg (manifest mode) ─────
     - name: Install vcpkg dependencies
-      shell: cmd
+      shell: pwsh
       run: |
-        mkdir C:\deps
-        cd /d C:\deps
-        echo {"dependencies": ["pthreads", "zlib"]} > vcpkg.json
-        "%VCPKG_ROOT%\vcpkg" install --triplet x64-windows
-        echo === Installed files ===
-        dir /s /b C:\deps\vcpkg_installed\x64-windows\include
-        dir /s /b C:\deps\vcpkg_installed\x64-windows\lib\*.lib
+        New-Item -ItemType Directory C:\deps -Force | Out-Null
+        Set-Location C:\deps
+
+        # Get the builtin-baseline from the runner's vcpkg checkout
+        $baseline = (git -C $env:VCPKG_ROOT rev-parse HEAD).Trim()
+        Write-Host "vcpkg baseline: $baseline"
+
+        # Create manifest with baseline
+        @{
+          dependencies = @("pthreads", "zlib")
+          "builtin-baseline" = $baseline
+        } | ConvertTo-Json | Set-Content vcpkg.json
+
+        Write-Host "vcpkg.json:"
+        Get-Content vcpkg.json
+
+        # Install
+        & "$env:VCPKG_ROOT\vcpkg" install --triplet x64-windows
+
+        Write-Host "=== Installed include ==="
+        Get-ChildItem "C:\deps\vcpkg_installed\x64-windows\include" -ErrorAction SilentlyContinue | Select Name
+        Write-Host "=== Installed lib ==="
+        Get-ChildItem "C:\deps\vcpkg_installed\x64-windows\lib\*.lib" -ErrorAction SilentlyContinue | Select Name
 
     # ── 6. Build QtKeychain from source ──────────────────
     - name: Build QtKeychain
