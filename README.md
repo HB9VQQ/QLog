@@ -1,3 +1,51 @@
+# QLog HB9VQQ Edition
+
+**A fork of [QLog](https://github.com/foldynl/QLog) by OK1MLG with FT8/FT4/FT2 frequency-based exclusion filtering.**
+
+This edition adds a feature [requested in upstream issue #937](https://github.com/foldynl/QLog/issues/937) but rejected by the maintainer — reliable filtering of FT8, FT4, and FT2 spots from the DX cluster display, even when cluster nodes mis-tag the mode.
+
+## What's Different
+
+**FT8/FT4/FT2 Frequency Exclusion Filter** — a two-layer filtering approach:
+
+- **Layer 1 — Independent mode groups:** FT4 and FT2 get their own checkboxes in the DX filter dialog (previously FT4 was lumped into Digital)
+- **Layer 2 — Frequency-range exclusion:** When FT8/FT4/FT2 checkboxes are unchecked, spots are also rejected by frequency range (±1 kHz around standard WSJT-X dial frequencies). This catches spots where the cluster node tagged the mode incorrectly or left it blank
+
+The patch modifies 8 files with 195 insertions and 12 deletions. Full details in the [project documentation](https://github.com/HB9VQQ/QLog/releases).
+
+## Download
+
+**Windows builds** are available on the [Releases](https://github.com/HB9VQQ/QLog/releases) page:
+
+- **Installer** (recommended) — run `qlog-installer.exe`
+- **Portable ZIP** — extract anywhere and run `qlog.exe`
+
+## Side-by-Side with Upstream QLog
+
+This edition installs and runs independently from upstream QLog:
+
+| | Upstream QLog | HB9VQQ Edition |
+|---|---|---|
+| Install directory | `Program Files\QLog` | `Program Files\QLog HB9VQQ Edition` |
+| Data directory | `AppData\Local\hamradio\QLog` | `AppData\Local\hamradio\QLog HB9VQQ Edition` |
+| Registry | `HKCU\Software\hamradio\QLog` | `HKCU\Software\hamradio\QLog HB9VQQ Edition` |
+| Start Menu | QLog | QLog HB9VQQ Edition |
+
+Both versions can be installed and run at the same time.
+
+## Upgrading from Upstream QLog
+
+On first launch, the HB9VQQ Edition automatically detects and copies your existing QLog data (database, settings, backups). Your original upstream data is never modified — it's a non-destructive copy. A dialog confirms the migration.
+
+## Staying in Sync
+
+This fork tracks upstream releases. When OK1MLG publishes updates, they are merged in and a new build is published here.
+
+*73 de Roland, HB9VQQ*
+
+---
+
+
 # QLog
 
 QLog is an Amateur Radio logging application for Linux, Windows. It
