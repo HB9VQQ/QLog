@@ -11,7 +11,6 @@ This edition adds a feature [requested in upstream issue #937](https://github.co
 - **Layer 1 — Independent mode groups:** FT4 and FT2 get their own checkboxes in the DX filter dialog (previously FT4 was lumped into Digital)
 - **Layer 2 — Frequency-range exclusion:** When FT8/FT4/FT2 checkboxes are unchecked, spots are also rejected by frequency range (±1 kHz around standard WSJT-X dial frequencies). This catches spots where the cluster node tagged the mode incorrectly or left it blank
 
-The patch modifies 8 files with 195 insertions and 12 deletions. Full details in the [project documentation](https://github.com/HB9VQQ/QLog/releases).
 
 ## Download
 
