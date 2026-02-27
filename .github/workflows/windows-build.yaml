@@ -57,7 +57,6 @@ jobs:
       run: |
         $zip = "hamlib-w64-${{ env.HAMLIB_VERSION }}.zip"
         $url = "https://github.com/Hamlib/Hamlib/releases/download/${{ env.HAMLIB_VERSION }}/$zip"
-        Write-Host "Downloading $url"
         Invoke-WebRequest $url -OutFile $zip
         Expand-Archive $zip -DestinationPath C:\
         Rename-Item "C:\hamlib-w64-${{ env.HAMLIB_VERSION }}" C:\hamlib
@@ -114,7 +113,6 @@ jobs:
         }
         if ($ssl) {
           echo "OPENSSL_DIR=$ssl" >> $env:GITHUB_ENV
-          Write-Host "OpenSSL at: $ssl"
         } else {
           echo "OPENSSL_DIR=" >> $env:GITHUB_ENV
         }
@@ -131,65 +129,52 @@ jobs:
         $src = Get-ChildItem C:\sqlite-tmp -Directory | Select -First 1
         Copy-Item "$($src.FullName)\sqlite3.c" $sqliteDir\
         Copy-Item "$($src.FullName)\sqlite3.h" $sqliteDir\
-        Write-Host "sqlite3 at: $sqliteDir"
 
-    # ── 7c. Setup OmniRig type libraries ─────────────────
-    #    Download .tlb from VE3NEA/OmniRig GitHub, patch
-    #    source #import to reference .tlb instead of installed EXEs
-    - name: Setup OmniRig type libraries
+    # ── 7c. Install OmniRig v1 + v2 ─────────────────────
+    #    QLog #import reads COM type libraries from these EXEs
+    - name: Install OmniRig
       shell: pwsh
       run: |
-        $tlbDir = "C:\omnirig-tlb"
-        New-Item -ItemType Directory $tlbDir -Force | Out-Null
-
-        # Download OmniRig v1 type library from VE3NEA GitHub
-        Invoke-WebRequest "https://raw.githubusercontent.com/VE3NEA/OmniRig/master/OmniRig.tlb" -OutFile "$tlbDir\OmniRig.tlb"
-        Write-Host "v1 .tlb: $((Get-Item "$tlbDir\OmniRig.tlb").Length) bytes"
-
-        # Try to get OmniRig v2 from HB9RYZ
-        # Download and run installer silently to get the exe with embedded type library
-        try {
-          Invoke-WebRequest "https://www.hb9ryz.ch/downloads/install_omnirigv21.zip" -OutFile omnirigv2.zip
-          Expand-Archive omnirigv2.zip -DestinationPath C:\omnirigv2-tmp -Force
-          $v2installer = Get-ChildItem C:\omnirigv2-tmp -Recurse -Filter "*.exe" | Select -First 1
-          if ($v2installer) {
-            Start-Process -FilePath $v2installer.FullName -ArgumentList "/VERYSILENT","/SUPPRESSMSGBOXES","/NORESTART" -Wait -ErrorAction SilentlyContinue
-            Start-Sleep -Seconds 3
-          }
-        } catch {
-          Write-Host "Could not download OmniRig v2: $_"
+        # --- OmniRig v1: download zip, extract, run installer ---
+        Write-Host "=== OmniRig v1 ==="
+        Invoke-WebRequest "http://www.dxatlas.com/OmniRig/Files/OmniRig.zip" -OutFile OmniRig.zip
+        Expand-Archive OmniRig.zip -DestinationPath C:\omnirig-v1-tmp
+        $setup = Get-ChildItem C:\omnirig-v1-tmp -Recurse -Filter "OmniRigSetup.exe" | Select -First 1
+        if ($setup) {
+          Write-Host "Running: $($setup.FullName)"
+          Start-Process -FilePath $setup.FullName -ArgumentList "/VERYSILENT","/SUPPRESSMSGBOXES","/NORESTART" -Wait
+          Start-Sleep -Seconds 2
         }
-
-        # Check if v2 got installed
-        $v2exe = Get-ChildItem "C:\Program Files (x86)" -Recurse -Filter "omnirig2.exe" -ErrorAction SilentlyContinue | Select -First 1
-
-        # Patch v1 source: use .tlb instead of .exe
-        $v1file = "rig\drivers\OmnirigRigDrv.cpp"
-        $v1content = Get-Content $v1file -Raw
-        $v1content = $v1content.Replace(
-          'C:\\Program Files (x86)\\Afreet\\OmniRig\\OmniRig.exe',
-          'C:\\omnirig-tlb\\OmniRig.tlb')
-        Set-Content $v1file $v1content -NoNewline
-        Write-Host "Patched v1:"
-        Select-String '#import' $v1file | ForEach-Object { $_.Line.Trim() }
-
-        # Patch v2 source: use installed exe if available, else use v1 .tlb as fallback
-        $v2file = "rig\drivers\Omnirigv2RigDrv.cpp"
-        $v2content = Get-Content $v2file -Raw
-        if ($v2exe) {
-          $v2path = $v2exe.FullName -replace '\\','\\'
-          Write-Host "Using installed v2 exe: $($v2exe.FullName)"
+        # Verify
+        $v1exe = "C:\Program Files (x86)\Afreet\OmniRig\OmniRig.exe"
+        if (Test-Path $v1exe) {
+          Write-Host "OmniRig v1 OK: $v1exe ($((Get-Item $v1exe).Length) bytes)"
         } else {
-          # Use v1 .tlb — the COM interfaces are the same (IOmniRigX)
-          $v2path = 'C:\\omnirig-tlb\\OmniRig.tlb'
-          Write-Host "Using v1 .tlb as fallback for v2"
+          Write-Error "OmniRig v1 not found at expected path!"
+          Get-ChildItem "C:\Program Files (x86)\Afreet" -Recurse -ErrorAction SilentlyContinue | Select FullName
         }
-        $v2content = $v2content.Replace(
-          'C:\\Program Files (x86)\\Omni-Rig V2\\omnirig2.exe',
-          $v2path)
-        Set-Content $v2file $v2content -NoNewline
-        Write-Host "Patched v2:"
-        Select-String '#import' $v2file | ForEach-Object { $_.Line.Trim() }
+
+        # --- OmniRig v2: download zip, run installer ---
+        Write-Host "=== OmniRig v2 ==="
+        Invoke-WebRequest "https://www.hb9ryz.ch/downloads/install_omnirigv21.zip" -OutFile omnirigv2.zip
+        Expand-Archive omnirigv2.zip -DestinationPath C:\omnirig-v2-tmp
+        # Show contents
+        Get-ChildItem C:\omnirig-v2-tmp -Recurse | Select FullName
+        $v2setup = Get-ChildItem C:\omnirig-v2-tmp -Recurse -Filter "*.exe" | Select -First 1
+        if ($v2setup) {
+          Write-Host "Running: $($v2setup.FullName)"
+          Start-Process -FilePath $v2setup.FullName -ArgumentList "/VERYSILENT","/SUPPRESSMSGBOXES","/NORESTART" -Wait
+          Start-Sleep -Seconds 2
+        }
+        # Verify
+        $v2exe = "C:\Program Files (x86)\Omni-Rig V2\omnirig2.exe"
+        if (Test-Path $v2exe) {
+          Write-Host "OmniRig v2 OK: $v2exe ($((Get-Item $v2exe).Length) bytes)"
+        } else {
+          Write-Warning "OmniRig v2 not found at expected path — checking alternatives..."
+          Get-ChildItem "C:\Program Files (x86)" -Directory -Filter "*mni*" -ErrorAction SilentlyContinue | Select FullName
+          Get-ChildItem "C:\Program Files (x86)" -Recurse -Filter "omnirig*" -ErrorAction SilentlyContinue | Select FullName
+        }
 
     # ── 8. Build QLog ────────────────────────────────────
     - name: Build QLog
@@ -248,7 +233,7 @@ jobs:
         windeployqt --release --no-translations qlog.exe
         Pop-Location
 
-        Write-Host "Deploy directory contents:"
+        Write-Host "Deploy contents:"
         Get-ChildItem $deploy | Format-Table Name, Length
 
     # ── 10. Create Qt IFW installer ──────────────────────
