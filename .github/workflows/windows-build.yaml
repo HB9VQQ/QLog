@@ -255,7 +255,7 @@ jobs:
         }
 
         Push-Location $deploy
-        windeployqt --release --no-translations qlog.exe
+        windeployqt --release --no-translations qlog.exe 2>&1 | Write-Host
         Pop-Location
 
         Write-Host "Deploy contents:"
