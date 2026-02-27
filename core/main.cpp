@@ -29,6 +29,8 @@
 #include "data/Data.h"
 #include "service/GenericCallbook.h"
 
+void migrateFromUpstreamQLog();
+
 MODULE_IDENTIFICATION("qlog.core.main");
 
 static QMutex debug_mutex;
@@ -500,6 +502,12 @@ int main(int argc, char* argv[])
     splash.ensureFirstPaint();
 
     createDataDirectory();
+
+    /* Migrate data from upstream QLog on first run.
+     * Copies qlog.db, backups, LOVs, QSL images and registry settings.
+     * Only runs when upstream data exists and edition has no qlog.db yet.
+     */
+    migrateFromUpstreamQLog();
 
     splash.showMessage(QObject::tr("Opening Database"), Qt::AlignBottom|Qt::AlignCenter );
 

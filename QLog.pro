@@ -61,6 +61,7 @@ SOURCES += \
         core/LogParam.cpp \
         core/MembershipQE.cpp \
         core/Migration.cpp \
+        core/migrate_upstream.cpp \
         core/NetworkNotification.cpp \
         core/PotaQE.cpp \
         core/PropConditions.cpp \
