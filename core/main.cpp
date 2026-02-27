@@ -14,6 +14,7 @@
 #include <QTemporaryDir>
 #include <sqlite3.h>
 #include <QStyleFactory>
+#include <QRegularExpression>
 
 #include "debug.h"
 #include "Migration.h"
@@ -205,6 +206,34 @@ static bool createSQLFunctions()
         if ( db_handle != 0 )
         {
             sqlite3_initialize();
+
+            // Register REGEXP function for SQLite (used by triggers
+            // and queries). Always register manually — the
+            // QSQLITE_ENABLE_REGEXP connect option does not survive
+            // when a separate sqlite3.c is compiled into the app
+            // (dual sqlite3 instances on Windows CI).
+            sqlite3_create_function(db_handle,
+                                    "regexp",
+                                    2,
+                                    SQLITE_UTF8 | SQLITE_DETERMINISTIC,
+                                    nullptr,
+                                    [](sqlite3_context *ctx, int argc, sqlite3_value **argv) {
+                                        if ( argc != 2 )
+                                        {
+                                            sqlite3_result_error(ctx, "Invalid arguments", -1);
+                                            return;
+                                        }
+                                        const char *pattern = reinterpret_cast<const char*>(sqlite3_value_text(argv[0]));
+                                        const char *text = reinterpret_cast<const char*>(sqlite3_value_text(argv[1]));
+                                        if ( !pattern || !text )
+                                        {
+                                            sqlite3_result_int(ctx, 0);
+                                            return;
+                                        }
+                                        QRegularExpression re(QString::fromUtf8(pattern));
+                                        sqlite3_result_int(ctx, re.match(QString::fromUtf8(text)).hasMatch() ? 1 : 0);
+                                    }, nullptr, nullptr);
+
             sqlite3_create_function(db_handle,
                                     "translate_to_locale",
                                     1,
