@@ -16,7 +16,7 @@ on:
   workflow_dispatch:        # manual trigger button in Actions tab
 
 env:
-  QT_VERSION: '6.8.2'
+  QT_VERSION: '6.10.2'
   HAMLIB_VERSION: '4.6.5'
 
 jobs:
