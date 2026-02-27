@@ -65,6 +65,7 @@ SOURCES += \
         core/NetworkNotification.cpp \
         core/PotaQE.cpp \
         core/PropConditions.cpp \
+        core/PropagationData.cpp \
         core/QSLStorage.cpp \
         core/QSOFilterManager.cpp \
         core/WsjtxUDPReceiver.cpp \
@@ -165,6 +166,7 @@ SOURCES += \
         ui/OnlineMapWidget.cpp \
         ui/PaperQSLDialog.cpp \
         ui/ProfileImageWidget.cpp \
+        ui/PropagationWidget.cpp \
         ui/QSLImportStatDialog.cpp \
         ui/QSODetailDialog.cpp \
         ui/QSOFilterDetail.cpp \
@@ -201,6 +203,7 @@ HEADERS += \
         core/NetworkNotification.h \
         core/PotaQE.h \
         core/PropConditions.h \
+        core/PropagationData.h \
         core/QSLStorage.h \
         core/QSOFilterManager.h \
         core/QuadKeyCache.h \
@@ -318,6 +321,7 @@ HEADERS += \
         ui/OnlineMapWidget.h \
         ui/PaperQSLDialog.h \
         ui/ProfileImageWidget.h \
+        ui/PropagationWidget.h \
         ui/QSLImportStatDialog.h \
         ui/QSODetailDialog.h \
         ui/QSOFilterDetail.h \

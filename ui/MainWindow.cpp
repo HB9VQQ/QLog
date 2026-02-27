@@ -21,6 +21,7 @@
 #include "ui/QSOFilterDialog.h"
 #include "ui/AwardsDialog.h"
 #include "core/PropConditions.h"
+#include "core/PropagationData.h"
 #include "data/MainLayoutProfile.h"
 #include "ui/EditActivitiesDialog.h"
 #include "ui/ProfileImageWidget.h"
@@ -397,6 +398,7 @@ MainWindow::MainWindow(QWidget* parent) :
 
     ui->onlineMapWidget->assignPropConditions(conditions);
     ui->newContactWidget->assignPropConditions(conditions);
+    PropagationData::instance();
 
     connect(clublogRT, &ClubLogUploader::uploadError, this, [this](const QString &msg)
     {

@@ -108,6 +108,7 @@
     <addaction name="actionMapWindow"/>
     <addaction name="actionProfileImage"/>
     <addaction name="actionOnlineMap"/>
+    <addaction name="actionPropagation"/>
     <addaction name="actionRig"/>
     <addaction name="actionRotator"/>
     <addaction name="actionWsjtx"/>
@@ -306,6 +307,15 @@
    </attribute>
    <widget class="AlertWidget" name="alertsWidget"/>
   </widget>
+  <widget class="QDockWidget" name="propagationDockWidget">
+   <property name="windowTitle">
+    <string>Propagation</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="PropagationWidget" name="propagationWidget"/>
+  </widget>
   <action name="actionQuit">
    <property name="icon">
     <iconset theme="application-exit">
@@ -488,6 +498,11 @@
   <action name="actionOnlineMap">
    <property name="text">
     <string>Online Map</string>
+   </property>
+  </action>
+  <action name="actionPropagation">
+   <property name="text">
+    <string>Propagation</string>
    </property>
   </action>
   <action name="actionAwards">
@@ -1024,6 +1039,12 @@
    <header>ui/AlertWidget.h</header>
    <container>1</container>
   </customwidget>
+  <customwidget>
+   <class>PropagationWidget</class>
+   <extends>QWidget</extends>
+   <header>ui/PropagationWidget.h</header>
+   <container>1</container>
+  </customwidget>
  </customwidgets>
  <resources>
   <include location="../res/icons/icons.qrc"/>
@@ -1321,6 +1342,22 @@
    <sender>actionOnlineMap</sender>
    <signal>triggered()</signal>
    <receiver>onlineMapDockWidget</receiver>
+   <slot>show()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>879</x>
+     <y>545</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionPropagation</sender>
+   <signal>triggered()</signal>
+   <receiver>propagationDockWidget</receiver>
    <slot>show()</slot>
    <hints>
     <hint type="sourcelabel">
