@@ -1682,7 +1682,9 @@ void MainWindow::showAbout()
 {
     FCT_IDENTIFICATION;
 
-    QString aboutText = tr("<h1>QLog %1</h1>"
+    QString aboutText = tr("<h1>QLog %1 — HB9VQQ Edition</h1>"
+                           "<p><em>Fork maintained by Roland HB9VQQ<br/>"
+                           "FT8/FT4/FT2 frequency-range filtering</em></p>"
                            "<p>&copy; 2019 Thomas Gatzweiler DL2IC<br/>"
                            "&copy; 2021-2026 Ladislav Foldyna OK1MLG<br/>"
                            "&copy; 2025-2026 Michael Morgan AA5SH<br/>"

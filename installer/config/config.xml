@@ -2,8 +2,8 @@
 <Installer>
     <Name>QLog</Name>
     <Version>0.48.0</Version>
-    <Title>QLog</Title>
-    <Publisher>OK1MLG</Publisher>
+    <Title>QLog HB9VQQ Edition</Title>
+    <Publisher>HB9VQQ / OK1MLG</Publisher>
     <StartMenuDir>QLog</StartMenuDir>
     <TargetDir>@ApplicationsDir@/QLog</TargetDir>
 </Installer>

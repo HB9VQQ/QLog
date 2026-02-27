@@ -447,7 +447,7 @@ int main(int argc, char* argv[])
     logToFile = parser.isSet(debugFile);
 
     app.setOrganizationName("hamradio");
-    app.setApplicationName("QLog" + ((environment.isEmpty()) ? "" : environment.prepend("-")));
+    app.setApplicationName("QLog HB9VQQ Edition" + ((environment.isEmpty()) ? "" : environment.prepend("-")));
 
     /* If the Style parameter is not present then use a default - Fusion style */
     if ( !stylePresent )
