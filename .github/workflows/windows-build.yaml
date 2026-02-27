@@ -150,7 +150,7 @@ jobs:
           Write-Error "v1 FAILED"
         }
 
-        # --- OmniRig v2: try installer with timeout, fall back to .tlb ---
+        # --- OmniRig v2: try installer with timeout, fall back to v1 .tlb ---
         Write-Host "=== OmniRig v2 ==="
         $v2installed = $false
         Invoke-WebRequest "https://www.hb9ryz.ch/downloads/install_omnirigv21.zip" -OutFile omnirigv2.zip
@@ -158,7 +158,6 @@ jobs:
 
         $installer = Get-ChildItem C:\omnirig-v2-tmp -Recurse -Filter "*.exe" | Select -First 1
         if ($installer) {
-          # Try NSIS silent (/S) with 30s timeout
           Write-Host "Trying /S (NSIS) with 30s timeout..."
           $proc = Start-Process -FilePath $installer.FullName -ArgumentList "/S" -PassThru
           $finished = $proc.WaitForExit(30000)
@@ -166,7 +165,6 @@ jobs:
             Write-Host "Installer timed out — killing"
             $proc.Kill()
           }
-          # Check if it installed
           $v2path = "C:\Program Files (x86)\Omni-Rig V2\omnirig2.exe"
           if (Test-Path $v2path) {
             Write-Host "v2 installed via /S"
@@ -175,19 +173,32 @@ jobs:
         }
 
         if (!$v2installed) {
-          # Fallback: download v1 .tlb and patch v2 source to use it
-          # The COM interfaces (IOmniRigX) are compatible between v1 and v2
-          Write-Host "v2 installer failed — patching source to use v1 .tlb"
+          # Fallback: use v1 .tlb and patch source to remove v2-only features
+          Write-Host "v2 installer failed — using v1 .tlb fallback with Rig3/Rig4 patch"
           Invoke-WebRequest "https://raw.githubusercontent.com/VE3NEA/OmniRig/master/OmniRig.tlb" -OutFile "C:\omnirig-v1.tlb"
 
           $v2file = "rig\drivers\Omnirigv2RigDrv.cpp"
           $content = Get-Content $v2file -Raw
+
+          # Patch #import to use v1 .tlb
           $content = $content.Replace(
             'C:\\Program Files (x86)\\Omni-Rig V2\\omnirig2.exe',
             'C:\\omnirig-v1.tlb')
+
+          # Remove get_Rig3/get_Rig4 calls (v1 only has Rig1+Rig2)
+          # Change case 3/4 to fall through to default (E_INVALIDARG)
+          $content = $content.Replace(
+            'case 3: hr = omniInterface->get_Rig3(&rig); break;',
+            'case 3: /* Rig3 not available in v1 fallback */')
+          $content = $content.Replace(
+            'case 4: hr = omniInterface->get_Rig4(&rig); break;',
+            'case 4: /* Rig4 not available in v1 fallback */')
+
           Set-Content $v2file $content -NoNewline
-          Write-Host "Patched v2 #import:"
+
+          Write-Host "Patched v2 source:"
           Select-String '#import' $v2file | ForEach-Object { $_.Line.Trim() }
+          Select-String 'case 3:|case 4:' $v2file | ForEach-Object { $_.Line.Trim() }
         }
 
     # ── 8. Build QLog ────────────────────────────────────
