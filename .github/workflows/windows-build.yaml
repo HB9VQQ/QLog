@@ -237,26 +237,28 @@ jobs:
         if (!$exe) { Write-Error "qlog.exe not found!"; exit 1 }
         Copy-Item $exe.FullName $deploy\
 
-        Copy-Item C:\hamlib\bin\*.dll $deploy\
-        Copy-Item C:\qtkeychain\bin\*.dll $deploy\ -ErrorAction SilentlyContinue
-        Copy-Item C:\qtkeychain\lib\*.dll $deploy\ -ErrorAction SilentlyContinue
+        # Run windeployqt FIRST on just qlog.exe (qt6keychain.dll confuses it)
+        Push-Location $deploy
+        windeployqt --release --no-translations qlog.exe
+        Pop-Location
+
+        # Copy non-Qt DLLs AFTER windeployqt
+        Copy-Item C:\hamlib\bin\*.dll $deploy\ -Force
+        Copy-Item C:\qtkeychain\bin\*.dll $deploy\ -Force -ErrorAction SilentlyContinue
+        Copy-Item C:\qtkeychain\lib\*.dll $deploy\ -Force -ErrorAction SilentlyContinue
 
         $vcpkgBin = "C:\vcpkg\installed\x64-windows\bin"
         if (Test-Path $vcpkgBin) {
-          Copy-Item "$vcpkgBin\*.dll" $deploy\ -ErrorAction SilentlyContinue
+          Copy-Item "$vcpkgBin\*.dll" $deploy\ -Force -ErrorAction SilentlyContinue
         }
 
         if ($env:OPENSSL_DIR -and (Test-Path $env:OPENSSL_DIR)) {
           $sslBin = Join-Path $env:OPENSSL_DIR "bin"
           if (Test-Path $sslBin) {
-            Copy-Item "$sslBin\libssl*.dll"    $deploy\ -ErrorAction SilentlyContinue
-            Copy-Item "$sslBin\libcrypto*.dll" $deploy\ -ErrorAction SilentlyContinue
+            Copy-Item "$sslBin\libssl*.dll"    $deploy\ -Force -ErrorAction SilentlyContinue
+            Copy-Item "$sslBin\libcrypto*.dll" $deploy\ -Force -ErrorAction SilentlyContinue
           }
         }
-
-        Push-Location $deploy
-        windeployqt --release --no-translations qlog.exe || true; $global:LASTEXITCODE = 0 2>&1 | Write-Host
-        Pop-Location
 
         Write-Host "Deploy contents:"
         Get-ChildItem $deploy | Format-Table Name, Length
