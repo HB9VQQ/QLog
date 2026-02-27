@@ -487,7 +487,7 @@ int main(int argc, char* argv[])
      * Therefore, in the case of two or more instances,
      * there is a port conflict.
      */
-    AppGuard guard( "QLog" );
+    AppGuard guard( "QLog HB9VQQ Edition" );
     if ( !guard.tryToRun() )
     {
         QMessageBox::critical(nullptr, QMessageBox::tr("QLog Error"),

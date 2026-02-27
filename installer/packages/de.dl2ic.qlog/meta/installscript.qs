@@ -12,7 +12,7 @@ Component.prototype.createOperations = function() {
     if (installer.value("os") === "win") {
        component.addOperation("CreateShortcut",
 			      "@TargetDir@/qlog.exe",
-			      "@StartMenuDir@/QLog.lnk",
+			      "@StartMenuDir@/QLog HB9VQQ Edition.lnk",
 			      "workingDirectory=@TargetDir@");
     }
 }
