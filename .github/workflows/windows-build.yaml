@@ -237,7 +237,10 @@ jobs:
         if (!$exe) { Write-Error "qlog.exe not found!"; exit 1 }
         Copy-Item $exe.FullName $deploy\
 
-        # Run windeployqt FIRST on just qlog.exe (qt6keychain.dll confuses it)
+        # Add QtKeychain to PATH so windeployqt can trace its dependencies
+        $env:Path = "C:\qtkeychain\bin;C:\qtkeychain\lib;" + $env:Path
+
+        # Run windeployqt — copies all Qt DLLs, plugins, etc.
         Push-Location $deploy
         windeployqt --release --no-translations qlog.exe
         Pop-Location
