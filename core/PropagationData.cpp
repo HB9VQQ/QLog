@@ -11,6 +11,9 @@
 #include "debug.h"
 #include "data/StationProfile.h"
 
+#define PROPAGATION_BASE_URL "https://dxmap.hb9vqq.ch/data/qlog/"
+#define PROPAGATION_POLL_INTERVAL_SEC 300
+
 MODULE_IDENTIFICATION("qlog.core.propagationdata");
 
 PropagationData::PropagationData(QObject *parent)
@@ -22,7 +25,7 @@ PropagationData::PropagationData(QObject *parent)
 
     // --- Poll timer (corridors refresh) ----------------------------------
     pollTimer = new QTimer(this);
-    pollTimer->setInterval(POLL_INTERVAL_SEC * 1000);
+    pollTimer->setInterval(PROPAGATION_POLL_INTERVAL_SEC * 1000);
     connect(pollTimer, &QTimer::timeout, this, &PropagationData::fetchCorridors);
 
     // --- React to station-profile switches (grid may change) -------------
@@ -109,7 +112,7 @@ void PropagationData::reloadStationProfile()
 
     if (m_userTopic != oldTopic && !m_userTopic.isEmpty())
     {
-        qCDebug(function) << "User topic changed from" << oldTopic
+        qCDebug(runtime) << "User topic changed from" << oldTopic
                           << "to" << m_userTopic << "- refetching corridors";
         fetchCorridors();
     }
@@ -123,7 +126,7 @@ void PropagationData::fetchGridRegions()
 {
     FCT_IDENTIFICATION;
 
-    QUrl url(QString("%1grid_regions.json").arg(BASE_URL));
+    QUrl url(QString("%1grid_regions.json").arg(PROPAGATION_BASE_URL));
     QNetworkRequest req(url);
     req.setHeader(QNetworkRequest::UserAgentHeader,
                   QString("QLog/%1").arg(VERSION).toUtf8());
@@ -144,7 +147,7 @@ void PropagationData::handleGridRegionsReply(QNetworkReply *reply)
         qWarning() << "PropagationData: grid_regions.json fetch failed:"
                    << reply->errorString();
         // Retry after one poll interval
-        QTimer::singleShot(POLL_INTERVAL_SEC * 1000, this,
+        QTimer::singleShot(PROPAGATION_POLL_INTERVAL_SEC * 1000, this,
                            &PropagationData::fetchGridRegions);
         return;
     }
@@ -172,7 +175,7 @@ void PropagationData::handleGridRegionsReply(QNetworkReply *reply)
     }
 
     gridRegionsLoaded = true;
-    qCDebug(function) << "Loaded" << gridRegions.size() << "grid regions";
+    qCDebug(runtime) << "Loaded" << gridRegions.size() << "grid regions";
 
     // Now resolve user region and start corridor polling
     resolveUserRegion();
@@ -199,7 +202,7 @@ void PropagationData::resolveUserRegion()
 
     if (grid2.isEmpty() || !gridRegions.contains(grid2))
     {
-        qCDebug(function) << "Grid" << grid2
+        qCDebug(runtime) << "Grid" << grid2
                           << "not in region map, defaulting to eu";
         m_userGrid2      = grid2;
         m_userTopic      = QStringLiteral("eu");
@@ -212,7 +215,7 @@ void PropagationData::resolveUserRegion()
     m_userTopic      = info.topic;
     m_userRegionName = info.name;
 
-    qCDebug(function) << "User grid" << grid2 << "→ topic" << m_userTopic
+    qCDebug(runtime) << "User grid" << grid2 << "→ topic" << m_userTopic
                       << "region" << m_userRegionName;
 }
 
@@ -227,7 +230,7 @@ void PropagationData::fetchCorridors()
     if (m_userTopic.isEmpty())
         return;
 
-    QUrl url(QString("%1propagation_%2.json").arg(BASE_URL, m_userTopic));
+    QUrl url(QString("%1propagation_%2.json").arg(PROPAGATION_BASE_URL, m_userTopic));
     QNetworkRequest req(url);
     req.setHeader(QNetworkRequest::UserAgentHeader,
                   QString("QLog/%1").arg(VERSION).toUtf8());
@@ -288,7 +291,7 @@ void PropagationData::handleCorridorsReply(QNetworkReply *reply)
     m_lastUpdated    = QDateTime::currentDateTimeUtc();
     m_corridorsLoaded = true;
 
-    qCDebug(function) << "Corridors updated:" << m_corridors.size()
+    qCDebug(runtime) << "Corridors updated:" << m_corridors.size()
                       << "targets for topic" << m_userTopic;
 
     emit dataUpdated();
