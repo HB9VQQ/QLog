@@ -270,9 +270,23 @@ void PropagationData::handleCorridorsReply(QNetworkReply *reply)
     m_solar.sfi      = solarObj.value("sfi").toInt(-1);
     m_solar.velocity = solarObj.value("velocity").toInt(-1);
 
-    // --- Corridors -------------------------------------------------------
-    QJsonObject corridorsObj = root.value("corridors").toObject();
+    // --- Corridors (nested: corridors → fromGrid → target → data) --------
+    QJsonObject allCorridorsObj = root.value("corridors").toObject();
     m_corridors.clear();
+
+    // Look up corridors for user's specific grid first,
+    // fall back to first available grid if user grid not present
+    QJsonObject corridorsObj;
+    if (allCorridorsObj.contains(m_userGrid2))
+    {
+        corridorsObj = allCorridorsObj.value(m_userGrid2).toObject();
+    }
+    else if (!allCorridorsObj.isEmpty())
+    {
+        corridorsObj = allCorridorsObj.begin().value().toObject();
+        qCDebug(runtime) << "Grid" << m_userGrid2 << "not in corridors,"
+                         << "falling back to" << allCorridorsObj.begin().key();
+    }
 
     for (auto it = corridorsObj.constBegin(); it != corridorsObj.constEnd(); ++it)
     {
