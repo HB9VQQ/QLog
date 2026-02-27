@@ -134,7 +134,7 @@ jobs:
     - name: Install OmniRig
       shell: pwsh
       run: |
-        # --- OmniRig v1: download zip, run InnoSetup installer silently ---
+        # --- OmniRig v1: InnoSetup installer (works silently) ---
         Write-Host "=== OmniRig v1 ==="
         Invoke-WebRequest "http://www.dxatlas.com/OmniRig/Files/OmniRig.zip" -OutFile OmniRig.zip
         Expand-Archive OmniRig.zip -DestinationPath C:\omnirig-v1-tmp
@@ -143,63 +143,51 @@ jobs:
           Start-Process -FilePath $setup.FullName -ArgumentList "/VERYSILENT","/SUPPRESSMSGBOXES","/NORESTART" -Wait
           Start-Sleep -Seconds 2
         }
-        $v1exe = "C:\Program Files (x86)\Afreet\OmniRig\OmniRig.exe"
-        if (Test-Path $v1exe) {
-          Write-Host "OmniRig v1 OK: $v1exe ($((Get-Item $v1exe).Length) bytes)"
+        $v1path = "C:\Program Files (x86)\Afreet\OmniRig\OmniRig.exe"
+        if (Test-Path $v1path) {
+          Write-Host "v1 OK: $v1path"
         } else {
-          Write-Error "OmniRig v1 not found!"
+          Write-Error "v1 FAILED"
         }
 
-        # --- OmniRig v2: download zip, extract with 7z (installer hangs) ---
+        # --- OmniRig v2: try installer with timeout, fall back to .tlb ---
         Write-Host "=== OmniRig v2 ==="
+        $v2installed = $false
         Invoke-WebRequest "https://www.hb9ryz.ch/downloads/install_omnirigv21.zip" -OutFile omnirigv2.zip
-
-        # Unzip the outer archive
         Expand-Archive omnirigv2.zip -DestinationPath C:\omnirig-v2-tmp
-        Write-Host "Zip contents:"
-        Get-ChildItem C:\omnirig-v2-tmp -Recurse | Select FullName
 
-        $v2dir = "C:\Program Files (x86)\Omni-Rig V2"
-        New-Item -ItemType Directory $v2dir -Force | Out-Null
-
-        # Check if omnirig2.exe is directly in the zip
-        $v2exe = Get-ChildItem C:\omnirig-v2-tmp -Recurse -Filter "omnirig2.exe" | Select -First 1
-        if ($v2exe) {
-          Copy-Item $v2exe.FullName "$v2dir\omnirig2.exe"
-          Write-Host "OmniRig v2 found directly in zip"
-        } else {
-          # It's an installer — extract its contents with 7z
-          $installer = Get-ChildItem C:\omnirig-v2-tmp -Recurse -Filter "*.exe" | Select -First 1
-          if ($installer) {
-            Write-Host "Extracting installer with 7z: $($installer.FullName)"
-            & 7z x $installer.FullName -oC:\omnirig-v2-extracted -y
-            Write-Host "Extracted contents:"
-            Get-ChildItem C:\omnirig-v2-extracted -Recurse | Select FullName
-
-            $v2exe = Get-ChildItem C:\omnirig-v2-extracted -Recurse -Filter "omnirig2.exe" | Select -First 1
-            if ($v2exe) {
-              Copy-Item $v2exe.FullName "$v2dir\omnirig2.exe"
-              Write-Host "OmniRig v2 extracted from installer"
-            } else {
-              # Try deeper extraction — some installers have nested archives
-              $inner = Get-ChildItem C:\omnirig-v2-extracted -Recurse -Include "*.7z","*.cab","*.msi" | Select -First 1
-              if ($inner) {
-                & 7z x $inner.FullName -oC:\omnirig-v2-deep -y
-                $v2exe = Get-ChildItem C:\omnirig-v2-deep -Recurse -Filter "omnirig2.exe" | Select -First 1
-                if ($v2exe) {
-                  Copy-Item $v2exe.FullName "$v2dir\omnirig2.exe"
-                  Write-Host "OmniRig v2 extracted from nested archive"
-                }
-              }
-            }
+        $installer = Get-ChildItem C:\omnirig-v2-tmp -Recurse -Filter "*.exe" | Select -First 1
+        if ($installer) {
+          # Try NSIS silent (/S) with 30s timeout
+          Write-Host "Trying /S (NSIS) with 30s timeout..."
+          $proc = Start-Process -FilePath $installer.FullName -ArgumentList "/S" -PassThru
+          $finished = $proc.WaitForExit(30000)
+          if (!$finished) {
+            Write-Host "Installer timed out — killing"
+            $proc.Kill()
+          }
+          # Check if it installed
+          $v2path = "C:\Program Files (x86)\Omni-Rig V2\omnirig2.exe"
+          if (Test-Path $v2path) {
+            Write-Host "v2 installed via /S"
+            $v2installed = $true
           }
         }
 
-        # Final check
-        if (Test-Path "$v2dir\omnirig2.exe") {
-          Write-Host "OmniRig v2 OK: $v2dir\omnirig2.exe ($((Get-Item "$v2dir\omnirig2.exe").Length) bytes)"
-        } else {
-          Write-Warning "OmniRig v2 not found — v2 rig driver may fail to compile"
+        if (!$v2installed) {
+          # Fallback: download v1 .tlb and patch v2 source to use it
+          # The COM interfaces (IOmniRigX) are compatible between v1 and v2
+          Write-Host "v2 installer failed — patching source to use v1 .tlb"
+          Invoke-WebRequest "https://raw.githubusercontent.com/VE3NEA/OmniRig/master/OmniRig.tlb" -OutFile "C:\omnirig-v1.tlb"
+
+          $v2file = "rig\drivers\Omnirigv2RigDrv.cpp"
+          $content = Get-Content $v2file -Raw
+          $content = $content.Replace(
+            'C:\\Program Files (x86)\\Omni-Rig V2\\omnirig2.exe',
+            'C:\\omnirig-v1.tlb')
+          Set-Content $v2file $content -NoNewline
+          Write-Host "Patched v2 #import:"
+          Select-String '#import' $v2file | ForEach-Object { $_.Line.Trim() }
         }
 
     # ── 8. Build QLog ────────────────────────────────────
