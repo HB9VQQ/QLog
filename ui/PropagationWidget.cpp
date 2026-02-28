@@ -223,15 +223,20 @@ bool PropagationWidget::event(QEvent *event)
 
 QColor PropagationWidget::bandColor(const QString &band)
 {
-    if (band == QLatin1String("10m"))  return QColor(66, 135, 245);
-    if (band == QLatin1String("12m"))  return QColor(66, 165, 245);
-    if (band == QLatin1String("15m"))  return QColor(38, 166, 154);
-    if (band == QLatin1String("17m"))  return QColor(102, 187, 106);
-    if (band == QLatin1String("20m"))  return QColor(67, 160, 71);
-    if (band == QLatin1String("30m"))  return QColor(126, 87, 194);
-    if (band == QLatin1String("40m"))  return QColor(171, 71, 188);
-    if (band == QLatin1String("60m"))  return QColor(239, 83, 80);
-    if (band == QLatin1String("80m"))  return QColor(229, 57, 53);
-    if (band == QLatin1String("160m")) return QColor(198, 40, 40);
+    // Match DX Map colors: green (high freq) to purple (low freq)
+    if (band == QLatin1String("10m"))  return QColor(34, 197, 94);    // #22c55e green
+    if (band == QLatin1String("12m"))  return QColor(132, 204, 22);   // #84cc16 lime
+    if (band == QLatin1String("15m"))  {
+        // Yellow is unreadable on light backgrounds
+        bool dark = qApp->palette().color(QPalette::Window).lightnessF() < 0.5;
+        return dark ? QColor(250, 204, 21) : QColor(184, 150, 15);   // #facc15 / #b8960f
+    }
+    if (band == QLatin1String("17m"))  return QColor(251, 146, 60);   // #fb923c orange
+    if (band == QLatin1String("20m"))  return QColor(249, 115, 22);   // #f97316 deep orange
+    if (band == QLatin1String("30m"))  return QColor(239, 68, 68);    // between 20m and 40m
+    if (band == QLatin1String("40m"))  return QColor(239, 68, 68);    // #ef4444 red
+    if (band == QLatin1String("60m"))  return QColor(192, 75, 175);   // between 40m and 80m
+    if (band == QLatin1String("80m"))  return QColor(168, 85, 247);   // #a855f7 purple
+    if (band == QLatin1String("160m")) return QColor(139, 92, 246);   // deeper purple
     return qApp->palette().color(QPalette::Text);
 }
