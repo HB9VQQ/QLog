@@ -59,6 +59,10 @@ public:
     QString gridToTopic(const QString &grid2) const;
     QString gridToName(const QString &grid2)  const;
 
+    // --- DXCC → grid helper (Phase 2: lat/lon → 2-letter Maidenhead) -----
+    static QString latlonToGrid2(double lat, double lon);
+    QString userGrid2() const;
+
     bool isGridRegionsLoaded() const;
     bool isCorridorsLoaded()   const;
 

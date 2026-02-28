@@ -32,6 +32,8 @@
 #include "data/Callsign.h"
 #include "core/LogParam.h"
 #include "core/PotaQE.h"
+#include "core/PropagationData.h"
+#include "data/Gridsquare.h"
 
 #define CONSOLE_VIEW 4
 #define NUM_OF_RECONNECT_ATTEMPTS 3
@@ -46,7 +48,7 @@ int DxTableModel::rowCount(const QModelIndex&) const
 
 int DxTableModel::columnCount(const QModelIndex&) const
 {
-    return 11;
+    return 14;
 }
 
 QVariant DxTableModel::data(const QModelIndex& index, int role) const
@@ -78,6 +80,49 @@ QVariant DxTableModel::data(const QModelIndex& index, int role) const
             return spot.memberList2StringList().join(", ");
         case 10:
             return QCoreApplication::translate("DBStrings", spot.dxcc.country.toUtf8().constData());
+        case 11: // Spotter Region
+        {
+            QString grid2 = PropagationData::latlonToGrid2(
+                spot.dxcc_spotter.latlon[0], spot.dxcc_spotter.latlon[1]);
+            if (grid2.isEmpty()) return QVariant();
+            QString name = PropagationData::instance()->gridToName(grid2);
+            return name.isEmpty() ? grid2 : name;
+        }
+        case 12: // Score
+        {
+            PropagationData *pd = PropagationData::instance();
+            if (!pd->isCorridorsLoaded()) return QVariant();
+            QString dxGrid2 = PropagationData::latlonToGrid2(
+                spot.dxcc.latlon[0], spot.dxcc.latlon[1]);
+            if (dxGrid2.isEmpty()) return QVariant();
+            QString targetTopic = pd->gridToTopic(dxGrid2);
+            if (targetTopic.isEmpty()) return QVariant();
+            // Target topic is the corridor key (e.g. "AF", "NA", "SA")
+            // Corridors are keyed by target region abbreviation, not topic
+            // Look through corridors for a matching topic
+            QMap<QString, PropagationData::CorridorInfo> corr = pd->corridors();
+            // The corridor keys are target abbreviations like "AF", "NA" etc.
+            // We need to find if there's a corridor whose target matches
+            // the DX station's region. The target region topic (e.g. "af")
+            // maps to corridor key (e.g. "AF") by uppercasing
+            QString corridorKey = targetTopic.toUpper();
+            auto it = corr.constFind(corridorKey);
+            if (it == corr.constEnd()) return QString("---");
+            int score = it->bands.value(spot.band, -1);
+            if (score < 0) return QString("---");
+            return score;
+        }
+        case 13: // Distance
+        {
+            const StationProfile &profile =
+                StationProfilesManager::instance()->getCurProfile1();
+            Gridsquare userGs(profile.locator);
+            if (!userGs.isValid()) return QVariant();
+            double distance = 0.0;
+            if (!userGs.distanceTo(spot.dxcc.latlon[0], spot.dxcc.latlon[1], distance))
+                return QVariant();
+            return static_cast<int>(qRound(distance));
+        }
         default:
             return QVariant();
         }
@@ -89,6 +134,52 @@ QVariant DxTableModel::data(const QModelIndex& index, int role) const
     else if (index.column() == 1 && role == Qt::ToolTipRole)
     {
         return QCoreApplication::translate("DBStrings", spot.dxcc.country.toUtf8().constData()) + " [" + Data::statusToText(spot.status) + "]";
+    }
+    else if (index.column() == 11 && role == Qt::ForegroundRole)
+    {
+        // Highlight green when spotter is in the same sub-region as the user
+        QString grid2 = PropagationData::latlonToGrid2(
+            spot.dxcc_spotter.latlon[0], spot.dxcc_spotter.latlon[1]);
+        if (!grid2.isEmpty())
+        {
+            QString spotterName = PropagationData::instance()->gridToName(grid2);
+            QString userName = PropagationData::instance()->userRegionName();
+            if (!spotterName.isEmpty() && spotterName == userName)
+                return QColor(0, 160, 0);  // green
+        }
+        return QVariant();
+    }
+    else if (index.column() == 11 && role == Qt::FontRole)
+    {
+        // Bold when spotter is in the same sub-region as the user
+        QString grid2 = PropagationData::latlonToGrid2(
+            spot.dxcc_spotter.latlon[0], spot.dxcc_spotter.latlon[1]);
+        if (!grid2.isEmpty())
+        {
+            QString spotterName = PropagationData::instance()->gridToName(grid2);
+            QString userName = PropagationData::instance()->userRegionName();
+            if (!spotterName.isEmpty() && spotterName == userName)
+            {
+                QFont f;
+                f.setBold(true);
+                return f;
+            }
+        }
+        return QVariant();
+    }
+    else if (index.column() == 12 && role == Qt::ForegroundRole)
+    {
+        // Score coloring: green ≥50, orange 10-49, red <10
+        QVariant v = data(index, Qt::DisplayRole);
+        bool ok;
+        int score = v.toInt(&ok);
+        if (ok)
+        {
+            if (score >= 50)     return QColor(0, 160, 0);   // green
+            else if (score >= 10) return QColor(200, 140, 0); // orange
+            else                  return QColor(200, 0, 0);   // red
+        }
+        return QVariant();
     }
     return QVariant();
 }
@@ -110,6 +201,9 @@ QVariant DxTableModel::headerData(int section, Qt::Orientation orientation, int 
     case 8: return tr("Band");
     case 9: return tr("Member");
     case 10: return tr("Country");
+    case 11: return tr("Spotter Region");
+    case 12: return tr("Score");
+    case 13: return tr("Distance");
 
     default: return QVariant();
     }
@@ -417,6 +511,9 @@ DxWidget::DxWidget(QWidget *parent) :
     ui->dxTable->hideColumn(8);  //band
     ui->dxTable->hideColumn(9);  //Memberships
     ui->dxTable->hideColumn(10); //Country
+    ui->dxTable->hideColumn(11); //Spotter Region
+    ui->dxTable->hideColumn(12); //Score
+    ui->dxTable->hideColumn(13); //Distance
     ui->dxTable->horizontalHeader()->setSectionsMovable(true);
 
     ui->wcyTable->setModel(wcyTableModel);

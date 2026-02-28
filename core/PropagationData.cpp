@@ -99,6 +99,27 @@ bool PropagationData::isCorridorsLoaded() const
     return m_corridorsLoaded;
 }
 
+QString PropagationData::latlonToGrid2(double lat, double lon)
+{
+    if (qIsNaN(lat) || qIsNaN(lon)
+        || qAbs(lat) >= 90.0 || qAbs(lon) >= 180.0)
+        return QString();
+
+    QString U = QStringLiteral("ABCDEFGHIJKLMNOPQRSTUVWX");
+    double modLon = lon + 180.0;
+    double modLat = lat + 90.0;
+
+    int lonField = qBound(0, static_cast<int>(modLon / 20.0), 17);
+    int latField = qBound(0, static_cast<int>(modLat / 10.0), 17);
+
+    return QString(U.at(lonField)) + QString(U.at(latField));
+}
+
+QString PropagationData::userGrid2() const
+{
+    return m_userGrid2;
+}
+
 // =========================================================================
 //  Station-profile change handler
 // =========================================================================
