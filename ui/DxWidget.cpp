@@ -121,7 +121,7 @@ QVariant DxTableModel::data(const QModelIndex& index, int role) const
             double distance = 0.0;
             if (!userGs.distanceTo(spot.dxcc.latlon[0], spot.dxcc.latlon[1], distance))
                 return QVariant();
-            return static_cast<int>(qRound(distance));
+            return static_cast<int>(qRound(distance * Gridsquare::localeDistanceCoef(locale)));
         }
         default:
             return QVariant();
@@ -203,7 +203,7 @@ QVariant DxTableModel::headerData(int section, Qt::Orientation orientation, int 
     case 10: return tr("Country");
     case 11: return tr("Spotter Region");
     case 12: return tr("Score");
-    case 13: return tr("Distance");
+    case 13: return tr("Distance") + " (" + (locale.getSettingUseMetric() ? tr("km") : tr("mi")) + ")";
 
     default: return QVariant();
     }
@@ -875,7 +875,32 @@ void DxWidget::restoreWidgetSetting()
     FCT_IDENTIFICATION;
 
     QByteArray state = LogParam::getDXCDXTableState();
-    if ( !state.isEmpty() ) ui->dxTable->horizontalHeader()->restoreState(state);
+    if ( !state.isEmpty() )
+    {
+        ui->dxTable->horizontalHeader()->restoreState(state);
+
+        // QHeaderView::restoreState silently breaks new columns when
+        // the saved state had fewer sections. Detect and reset.
+        bool needsReset = false;
+        for (int i = 0; i < dxTableModel->columnCount(); ++i)
+        {
+            if (ui->dxTable->horizontalHeader()->sectionSize(i) <= 0
+                && !ui->dxTable->isColumnHidden(i))
+            {
+                needsReset = true;
+                break;
+            }
+        }
+        if (needsReset)
+        {
+            qInfo() << "DX table column count changed, resetting header state";
+            ui->dxTable->horizontalHeader()->reset();
+            LogParam::setDXCDXTableState(QByteArray());
+            // Re-apply default hidden columns
+            for (int col : {6, 7, 8, 9, 10, 11, 12, 13})
+                ui->dxTable->hideColumn(col);
+        }
+    }
 
     state = LogParam::getDXCWCYTableState();
     if ( !state.isEmpty() ) ui->wcyTable->horizontalHeader()->restoreState(state);
