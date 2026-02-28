@@ -4,14 +4,16 @@
 #include <QWidget>
 #include <QLabel>
 #include <QBoxLayout>
+#include <QColor>
 
 class QDockWidget;
 
 /**
  * @brief Dockable widget showing best HF band per target region.
  *
- * Displays corridor "chips" — one per target region (AF, SA, NA, AS, OC, PAC)
- * with a colored band pill and border indicating DX Index quality.
+ * Displays corridor labels — one per target region (AF, SA, NA, AS, OC, PAC)
+ * with colored band text. Uses QPalette for all styling to integrate
+ * with the QLog theme.
  *
  * Connects to PropagationData::dataUpdated() to refresh automatically.
  * Auto-detects horizontal vs vertical dock orientation for layout.
@@ -55,11 +57,8 @@ private:
     // Region display order
     static const QStringList &corridorOrder();
 
-    // Styling helpers
-    static QString bandColor(const QString &band);
-    static QString borderColor(int index);
-    static QString chipStyleSheet(int index, const QString &band);
-    static QString bandPillStyleSheet(const QString &band);
+    // Band text color
+    static QColor bandColor(const QString &band);
 };
 
 #endif // QLOG_UI_PROPAGATIONWIDGET_H

@@ -3,6 +3,8 @@
 #include <QLabel>
 #include <QDockWidget>
 #include <QResizeEvent>
+#include <QApplication>
+#include <QPalette>
 
 #include "PropagationWidget.h"
 #include "core/PropagationData.h"
@@ -21,6 +23,7 @@ const QStringList &PropagationWidget::corridorOrder()
         QStringLiteral("AS"),
         QStringLiteral("NA"),
         QStringLiteral("OC"),
+        QStringLiteral("PAC"),
         QStringLiteral("SA")
     };
     return order;
@@ -37,11 +40,9 @@ PropagationWidget::PropagationWidget(QWidget *parent)
 
     buildLayout();
 
-    // Connect to data source
     connect(PropagationData::instance(), &PropagationData::dataUpdated,
             this, &PropagationWidget::updateDisplay);
 
-    // Initial draw (may be empty until first fetch completes)
     updateDisplay();
 }
 
@@ -58,30 +59,28 @@ void PropagationWidget::buildLayout()
 {
     FCT_IDENTIFICATION;
 
-    // Main vertical layout wrapping title + chips
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(4, 2, 4, 2);
     mainLayout->setSpacing(2);
 
-    // Title label — "Best Band from {region}"
+    // Title
     titleLabel = new QLabel(this);
     titleLabel->setAlignment(Qt::AlignCenter);
-    QFont titleFont = titleLabel->font();
-    titleFont.setBold(true);
-    titleFont.setPointSize(titleFont.pointSize() - 1);
-    titleLabel->setFont(titleFont);
     mainLayout->addWidget(titleLabel);
 
-    // Status label (shown while loading)
+    // Status (shown while loading)
     statusLabel = new QLabel(tr("Loading propagation data…"), this);
     statusLabel->setAlignment(Qt::AlignCenter);
-    statusLabel->setStyleSheet("color: #888;");
+    QPalette pal = statusLabel->palette();
+    pal.setColor(QPalette::WindowText,
+                 qApp->palette().color(QPalette::Disabled, QPalette::Text));
+    statusLabel->setPalette(pal);
     mainLayout->addWidget(statusLabel);
 
-    // Chip container — direction determined by dock orientation
+    // Chip container
     chipLayout = new QHBoxLayout();
     chipLayout->setContentsMargins(0, 0, 0, 0);
-    chipLayout->setSpacing(4);
+    chipLayout->setSpacing(8);
     mainLayout->addLayout(chipLayout);
 
     updateTitle();
@@ -91,7 +90,6 @@ void PropagationWidget::rebuildChips()
 {
     FCT_IDENTIFICATION;
 
-    // Clear existing chips
     for (auto &chip : chips)
     {
         chipLayout->removeWidget(chip.container);
@@ -102,51 +100,45 @@ void PropagationWidget::rebuildChips()
     const auto &corridors = PropagationData::instance()->corridors();
     const auto &order = corridorOrder();
 
+    QColor textColor = qApp->palette().color(QPalette::Text);
+    QColor dimColor  = qApp->palette().color(QPalette::Disabled, QPalette::Text);
+
     for (const QString &region : order)
     {
         ChipWidget cw;
-
-        // Container with border
         cw.container = new QWidget(this);
-        cw.container->setMinimumWidth(50);
 
-        QVBoxLayout *chipVBox = new QVBoxLayout(cw.container);
-        chipVBox->setContentsMargins(4, 3, 4, 3);
-        chipVBox->setSpacing(1);
-        chipVBox->setAlignment(Qt::AlignCenter);
+        QHBoxLayout *hbox = new QHBoxLayout(cw.container);
+        hbox->setContentsMargins(0, 0, 0, 0);
+        hbox->setSpacing(3);
 
-        // Region label (AF, SA, NA, …)
+        // Region label — plain text like the rest of QLog
         cw.regionLabel = new QLabel(region, cw.container);
-        cw.regionLabel->setAlignment(Qt::AlignCenter);
-        QFont rf = cw.regionLabel->font();
-        rf.setBold(true);
-        rf.setPointSize(rf.pointSize() - 1);
-        cw.regionLabel->setFont(rf);
-        chipVBox->addWidget(cw.regionLabel);
+        cw.regionLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        hbox->addWidget(cw.regionLabel);
 
-        // Band pill
+        // Band label — colored text only, no background
         cw.bandLabel = new QLabel(cw.container);
-        cw.bandLabel->setAlignment(Qt::AlignCenter);
+        cw.bandLabel->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
         QFont bf = cw.bandLabel->font();
-        bf.setPointSize(bf.pointSize() - 1);
+        bf.setBold(true);
         cw.bandLabel->setFont(bf);
-        chipVBox->addWidget(cw.bandLabel);
+        hbox->addWidget(cw.bandLabel);
 
-        // Populate from data
         auto it = corridors.constFind(region);
         if (it != corridors.constEnd() && !it->bestBand.isEmpty())
         {
             cw.bandLabel->setText(it->bestBand);
-            cw.bandLabel->setStyleSheet(bandPillStyleSheet(it->bestBand));
-            cw.container->setStyleSheet(chipStyleSheet(it->index, it->bestBand));
+            QPalette bp = cw.bandLabel->palette();
+            bp.setColor(QPalette::WindowText, bandColor(it->bestBand));
+            cw.bandLabel->setPalette(bp);
         }
         else
         {
             cw.bandLabel->setText(QStringLiteral("---"));
-            cw.bandLabel->setStyleSheet(
-                "background-color: #e0e0e0; color: #999; "
-                "border-radius: 3px; padding: 1px 4px;");
-            cw.container->setStyleSheet(chipStyleSheet(-1, QString()));
+            QPalette bp = cw.bandLabel->palette();
+            bp.setColor(QPalette::WindowText, dimColor);
+            cw.bandLabel->setPalette(bp);
         }
 
         chipLayout->addWidget(cw.container);
@@ -164,9 +156,8 @@ void PropagationWidget::updateTitle()
     if (region.isEmpty())
         titleLabel->setText(tr("Propagation"));
     else
-        titleLabel->setText(tr("Best Band from %1").arg(region));
+        titleLabel->setText(tr("Best Band from %1 to").arg(region));
 
-    // Also update parent dock widget title if available
     QDockWidget *dock = qobject_cast<QDockWidget *>(parentWidget());
     if (dock)
         dock->setWindowTitle(titleLabel->text());
@@ -209,7 +200,6 @@ void PropagationWidget::resizeEvent(QResizeEvent *event)
     if (!chipLayout)
         return;
 
-    // Switch layout direction based on aspect ratio
     QBoxLayout::Direction newDir = isHorizontal()
         ? QBoxLayout::LeftToRight : QBoxLayout::TopToBottom;
 
@@ -219,7 +209,6 @@ void PropagationWidget::resizeEvent(QResizeEvent *event)
 
 bool PropagationWidget::event(QEvent *event)
 {
-    // Catch dock location changes
     if (event->type() == QEvent::ParentChange ||
         event->type() == QEvent::Move)
     {
@@ -229,50 +218,20 @@ bool PropagationWidget::event(QEvent *event)
 }
 
 // =========================================================================
-//  Styling
+//  Band colors
 // =========================================================================
 
-QString PropagationWidget::bandColor(const QString &band)
+QColor PropagationWidget::bandColor(const QString &band)
 {
-    // Band → pill background color
-    if (band == QLatin1String("10m"))  return QStringLiteral("#4287f5");  // blue
-    if (band == QLatin1String("12m"))  return QStringLiteral("#42a5f5");  // light blue
-    if (band == QLatin1String("15m"))  return QStringLiteral("#26a69a");  // teal
-    if (band == QLatin1String("17m"))  return QStringLiteral("#66bb6a");  // light green
-    if (band == QLatin1String("20m"))  return QStringLiteral("#43a047");  // green
-    if (band == QLatin1String("30m"))  return QStringLiteral("#7e57c2");  // deep purple
-    if (band == QLatin1String("40m"))  return QStringLiteral("#ab47bc");  // purple
-    if (band == QLatin1String("60m"))  return QStringLiteral("#ef5350");  // light red
-    if (band == QLatin1String("80m"))  return QStringLiteral("#e53935");  // red
-    if (band == QLatin1String("160m")) return QStringLiteral("#c62828");  // dark red
-    return QStringLiteral("#9e9e9e");  // grey fallback
-}
-
-QString PropagationWidget::borderColor(int index)
-{
-    if (index >= 50)  return QStringLiteral("#43a047");  // green — open
-    if (index >= 10)  return QStringLiteral("#ff9800");  // orange — marginal
-    return QStringLiteral("#bdbdbd");                     // grey — closed / no data
-}
-
-QString PropagationWidget::chipStyleSheet(int index, const QString & /* band */)
-{
-    QString bc = borderColor(index);
-    return QString(
-        "QWidget { "
-        "  border: 2px solid %1; "
-        "  border-radius: 6px; "
-        "  background-color: palette(window); "
-        "}").arg(bc);
-}
-
-QString PropagationWidget::bandPillStyleSheet(const QString &band)
-{
-    QString bg = bandColor(band);
-    return QString(
-        "background-color: %1; "
-        "color: white; "
-        "border-radius: 3px; "
-        "padding: 1px 6px; "
-        "border: none;").arg(bg);
+    if (band == QLatin1String("10m"))  return QColor(66, 135, 245);
+    if (band == QLatin1String("12m"))  return QColor(66, 165, 245);
+    if (band == QLatin1String("15m"))  return QColor(38, 166, 154);
+    if (band == QLatin1String("17m"))  return QColor(102, 187, 106);
+    if (band == QLatin1String("20m"))  return QColor(67, 160, 71);
+    if (band == QLatin1String("30m"))  return QColor(126, 87, 194);
+    if (band == QLatin1String("40m"))  return QColor(171, 71, 188);
+    if (band == QLatin1String("60m"))  return QColor(239, 83, 80);
+    if (band == QLatin1String("80m"))  return QColor(229, 57, 53);
+    if (band == QLatin1String("160m")) return QColor(198, 40, 40);
+    return qApp->palette().color(QPalette::Text);
 }
