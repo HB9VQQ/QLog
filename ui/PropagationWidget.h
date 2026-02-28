@@ -36,8 +36,8 @@ protected:
 private:
     // Layout
     QBoxLayout *chipLayout = nullptr;
-    QLabel     *titleLabel = nullptr;
     QLabel     *statusLabel = nullptr;
+    QLabel     *titleLabel = nullptr;
 
     // Chip rendering
     struct ChipWidget

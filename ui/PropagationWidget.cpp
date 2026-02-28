@@ -63,7 +63,7 @@ void PropagationWidget::buildLayout()
     mainLayout->setContentsMargins(4, 2, 4, 2);
     mainLayout->setSpacing(2);
 
-    // Title
+    // Title label (inline, above chips)
     titleLabel = new QLabel(this);
     titleLabel->setAlignment(Qt::AlignCenter);
     mainLayout->addWidget(titleLabel);
@@ -153,14 +153,16 @@ void PropagationWidget::updateTitle()
     PropagationData *pd = PropagationData::instance();
     QString region = pd->userRegionName();
 
-    if (region.isEmpty())
-        titleLabel->setText(tr("Propagation"));
-    else
-        titleLabel->setText(tr("Best Band from %1 to").arg(region));
+    QString title = region.isEmpty()
+        ? tr("Propagation")
+        : tr("Best Band from %1 to").arg(region);
+
+    if (titleLabel)
+        titleLabel->setText(title);
 
     QDockWidget *dock = qobject_cast<QDockWidget *>(parentWidget());
     if (dock)
-        dock->setWindowTitle(titleLabel->text());
+        dock->setWindowTitle(QString());
 }
 
 // =========================================================================
