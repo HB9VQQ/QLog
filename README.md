@@ -1,15 +1,28 @@
 # QLog HB9VQQ Edition
 
-**A fork of [QLog](https://github.com/foldynl/QLog) by OK1MLG with FT8/FT4/FT2 frequency-based exclusion filtering.**
+**A fork of [QLog](https://github.com/foldynl/QLog) by OK1MLG with FT8/FT4/FT2 frequency exclusion, real-time propagation awareness, and DXpedition-safe LoTW filtering.**
 
-This edition adds a feature [requested in upstream issue #937](https://github.com/foldynl/QLog/issues/937) but rejected by the maintainer — reliable filtering of FT8, FT4, and FT2 spots from the DX cluster display, even when cluster nodes mis-tag the mode.
+This edition adds features for the serious DXer — reliable mode filtering, propagation-driven spot scoring, and smart LoTW filtering that won't hide active DXpeditions.
 
 ## What's Different
 
-**FT8/FT4/FT2 Frequency Exclusion Filter** — a two-layer filtering approach:
+**FT8/FT4/FT2 Frequency Exclusion Filter** — a two-layer filtering approach ([upstream issue #937](https://github.com/foldynl/QLog/issues/937)):
 
 - **Layer 1 — Independent mode groups:** FT4 and FT2 get their own checkboxes in the DX filter dialog (previously FT4 was lumped into Digital)
 - **Layer 2 — Frequency-range exclusion:** When FT8/FT4/FT2 checkboxes are unchecked, spots are also rejected by frequency range (±1 kHz around standard WSJT-X dial frequencies). This catches spots where the cluster node tagged the mode incorrectly or left it blank
+
+**Real-Time Propagation Awareness** — powered by [DX Index data](https://dx.hb9vqq.ch) from HB9VQQ:
+
+- **Propagation Window** — dockable widget showing best band per target region from your QTH, updated every 5 minutes
+- **DX Table Columns** — Spotter Region, Score (0–100 workability index), and Distance columns in the DX cluster spot list
+- **Propagation Filter Tab** — filter spots by minimum workability score, spotter sub-region, and sort by score. Sub-region filter supersedes the coarser Spotter Continent filter with automatic mutual exclusion
+
+**DXpedition-Safe LoTW Filtering** — automatically bypasses the LoTW member filter for active DXpeditions:
+
+- Fetches the [ClubLog Expeditions list](https://clublog.org/expeditions.php) at startup and refreshes daily
+- DXpedition callsigns (last QSO within 12 months) always pass through the LoTW filter
+- Enables safe use of Member → LoTW filtering without losing spots like 3Y0K or KP5/NP3VI that upload to LoTW only after the expedition ends
+- Works for both DX cluster spots and WSJT-X alerts
 
 
 ## Download
