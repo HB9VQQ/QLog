@@ -5,6 +5,7 @@
 #include <QLabel>
 #include <QFrame>
 #include <QPushButton>
+#include <QMessageBox>
 
 #include "DxFilterDialog.h"
 #include "ui_DxFilterDialog.h"
@@ -133,6 +134,31 @@ DxFilterDialog::DxFilterDialog(QWidget *parent) :
 
     // Sort by Score
     ui->sortByScoreCheckbox->setChecked(LogParam::getDXCFilterSortByScore());
+
+    // Mutual exclusion: Sub-Region filter supersedes Spotter Continent filter.
+    // When Sub-Region groupbox is checked, uncheck all Spotter Continent checkboxes.
+    connect(ui->spotterRegionGroupBox, &QGroupBox::toggled, this, [this](bool checked) {
+        if (checked)
+        {
+            ui->afcheckbox_spotter->setChecked(false);
+            ui->ancheckbox_spotter->setChecked(false);
+            ui->ascheckbox_spotter->setChecked(false);
+            ui->eucheckbox_spotter->setChecked(false);
+            ui->nacheckbox_spotter->setChecked(false);
+            ui->occheckbox_spotter->setChecked(false);
+            ui->sacheckbox_spotter->setChecked(false);
+        }
+        else
+        {
+            ui->afcheckbox_spotter->setChecked(true);
+            ui->ancheckbox_spotter->setChecked(true);
+            ui->ascheckbox_spotter->setChecked(true);
+            ui->eucheckbox_spotter->setChecked(true);
+            ui->nacheckbox_spotter->setChecked(true);
+            ui->occheckbox_spotter->setChecked(true);
+            ui->sacheckbox_spotter->setChecked(true);
+        }
+    });
 }
 
 void DxFilterDialog::accept()
@@ -229,6 +255,24 @@ void DxFilterDialog::accept()
     /*****************************/
     /* Propagation Filter Tab    */
     /*****************************/
+
+    // Validate: if sub-region filter is enabled, at least one region must be selected
+    if (ui->spotterRegionGroupBox->isChecked())
+    {
+        bool anyChecked = false;
+        for (QCheckBox *cb : static_cast<const QList<QCheckBox*>&>(regionCheckBoxes))
+        {
+            if (cb->isChecked()) { anyChecked = true; break; }
+        }
+        if (!anyChecked)
+        {
+            QMessageBox::warning(this, tr("Propagation Filter"),
+                tr("At least one spotter sub-region must be selected."));
+            ui->tabWidget->setCurrentWidget(ui->propagation_filters);
+            return;
+        }
+    }
+
     LogParam::setDXCFilterMinScore(ui->minScoreSlider->value());
     LogParam::setDXCFilterRegionEnabled(ui->spotterRegionGroupBox->isChecked());
 

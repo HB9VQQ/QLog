@@ -1992,7 +1992,7 @@ void DxWidget::processDxSpot(const QString &spotter,
     if ( spot.modeGroupString.contains(moderegexp)
          && !freqExcluded
          && spot.dxcc.cont.contains(contregexp)
-         && spot.dxcc_spotter.cont.contains(spottercontregexp)
+         && (spotterRegionFilterEnabled || spot.dxcc_spotter.cont.contains(spottercontregexp))
          && spot.band.contains(bandregexp)
          && ( spot.status & dxccStatusFilter)
          && ( dxMemberFilter.size() == 0
