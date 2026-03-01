@@ -24,6 +24,13 @@ This edition adds features for the serious DXer — reliable mode filtering, pro
 - Enables safe use of Member → LoTW filtering without losing spots like 3Y0K or KP5/NP3VI that upload to LoTW only after the expedition ends
 - Works for both DX cluster spots and WSJT-X alerts
 
+**Per-Band Antenna Bearing Offset** — correct rotor commands for antennas with different radiation patterns per band:
+
+- Extends the antenna profile (Settings → Equipment → Antennas) with per-band azimuth offsets
+- Solves the Spiderbeam Yagi + 40m add-on dipole problem: the dipole radiates broadside (perpendicular to boom) while Yagi elements radiate end-fire, requiring a −90° offset on 40m
+- When QLog sends a rotor command, it applies the per-band offset if defined, otherwise the global offset
+- Equivalent to PstRotatorAz's "ANT 2 BD-90" feature, built into QLog
+
 
 ## Download
 
