@@ -212,6 +212,10 @@ private:
     DXCType dxcType = UNKNOWN;
     QMenu *commandsMenu;
     QSet<QString> dxMemberFilter;
+    int minScoreFilter;
+    QSet<QString> excludedSpotterRegions;
+    bool spotterRegionFilterEnabled;
+    bool sortByScore;
     QSqlRecord lastQSO;
     quint8 reconnectAttempts;
     QTimer reconnectTimer;
@@ -235,6 +239,12 @@ private:
     int getDedupTimeValue();
     int getDedupFreqValue();
     QStringList dxMemberList();
+    int minScoreValue();
+    QStringList excludedSpotterRegionsList();
+    bool spotterRegionFilterEnabledValue();
+    bool sortByScoreValue();
+    bool spotPassesMinScore(const DxSpot &spot) const;
+    bool spotPassesRegionFilter(const DxSpot &spot) const;
     bool getAutoconnectServer();
     void saveAutoconnectServer(bool);
     bool getKeepQSOs();

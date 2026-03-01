@@ -473,6 +473,9 @@ DxWidget::DxWidget(QWidget *parent) :
     socket(nullptr),
     ui(new Ui::DxWidget),
     deduplicateSpots(false),
+    minScoreFilter(0),
+    spotterRegionFilterEnabled(false),
+    sortByScore(false),
     commandsMenu(new QMenu(this)),
     reconnectAttempts(0),
     connectionState(DISCONNECTED),
@@ -814,6 +817,69 @@ QStringList DxWidget::dxMemberList()
     FCT_IDENTIFICATION;
 
     return LogParam::getDXCFilterMemberlists();
+}
+
+int DxWidget::minScoreValue()
+{
+    FCT_IDENTIFICATION;
+
+    return LogParam::getDXCFilterMinScore();
+}
+
+QStringList DxWidget::excludedSpotterRegionsList()
+{
+    FCT_IDENTIFICATION;
+
+    return LogParam::getDXCFilterExcludedRegions();
+}
+
+bool DxWidget::spotterRegionFilterEnabledValue()
+{
+    FCT_IDENTIFICATION;
+
+    return LogParam::getDXCFilterRegionEnabled();
+}
+
+bool DxWidget::sortByScoreValue()
+{
+    FCT_IDENTIFICATION;
+
+    return LogParam::getDXCFilterSortByScore();
+}
+
+bool DxWidget::spotPassesMinScore(const DxSpot &spot) const
+{
+    PropagationData *pd = PropagationData::instance();
+    if (!pd->isCorridorsLoaded()) return true;
+
+    QString dxGrid2 = PropagationData::latlonToGrid2(
+        spot.dxcc.latlon[0], spot.dxcc.latlon[1]);
+    if (dxGrid2.isEmpty()) return true;
+
+    QString targetTopic = pd->gridToTopic(dxGrid2);
+    if (targetTopic.isEmpty()) return true;
+
+    QString corridorKey = targetTopic.toUpper();
+    QMap<QString, PropagationData::CorridorInfo> corr = pd->corridors();
+    auto it = corr.constFind(corridorKey);
+    if (it == corr.constEnd()) return true;
+
+    int score = it->bands.value(spot.band, -1);
+    if (score < 0) return true;  // no data → don't filter
+
+    return score >= minScoreFilter;
+}
+
+bool DxWidget::spotPassesRegionFilter(const DxSpot &spot) const
+{
+    QString grid2 = PropagationData::latlonToGrid2(
+        spot.dxcc_spotter.latlon[0], spot.dxcc_spotter.latlon[1]);
+    if (grid2.isEmpty()) return true;
+
+    QString name = PropagationData::instance()->gridToName(grid2);
+    if (name.isEmpty()) return true;
+
+    return !excludedSpotterRegions.contains(name);
 }
 
 bool DxWidget::getAutoconnectServer()
@@ -1410,6 +1476,24 @@ void DxWidget::reloadSetting()
     dxMemberFilter = QSet<QString>(QSet<QString>::fromList(tmp));
 #endif
 
+    /* Phase 3 — Propagation filters */
+    minScoreFilter = minScoreValue();
+    {
+        QStringList tmp2 = excludedSpotterRegionsList();
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
+        excludedSpotterRegions = QSet<QString>(tmp2.begin(), tmp2.end());
+#else
+        excludedSpotterRegions = QSet<QString>(QSet<QString>::fromList(tmp2));
+#endif
+    }
+    spotterRegionFilterEnabled = spotterRegionFilterEnabledValue();
+    sortByScore = sortByScoreValue();
+
+    if (sortByScore)
+        dxTableProxyModel->sort(12, Qt::DescendingOrder);
+    else
+        dxTableProxyModel->sort(-1);
+
     ui->filteredLabel->setHidden(!isFilterEnabled());
 }
 
@@ -1534,7 +1618,10 @@ bool DxWidget::isFilterEnabled() const
         // || deduplicateSpots  // deduplication does not mean filtring.
         || spottercontregexp.pattern().count("|") != 7
         || moderegexp.pattern().count("|") != 6
-        || BandPlan::bandsList(false, true).size() != bandregexp.pattern().count("|");
+        || BandPlan::bandsList(false, true).size() != bandregexp.pattern().count("|")
+        || minScoreFilter > 0
+        || spotterRegionFilterEnabled
+        || sortByScore;
 }
 
 void DxWidget::recalculateTrend()
@@ -1911,6 +1998,8 @@ void DxWidget::processDxSpot(const QString &spotter,
          && ( dxMemberFilter.size() == 0
             || (dxMemberFilter.size() && spot.memberList2Set().intersects(dxMemberFilter)) )
          && spot.dupeCount == 0
+         && (minScoreFilter == 0 || spotPassesMinScore(spot))
+         && (!spotterRegionFilterEnabled || spotPassesRegionFilter(spot))
         )
     {
         if ( dxTableModel->addEntry(spot, deduplicateSpots, deduplicatetime, deduplicatefreq) )

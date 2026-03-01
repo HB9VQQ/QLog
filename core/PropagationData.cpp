@@ -99,6 +99,28 @@ bool PropagationData::isCorridorsLoaded() const
     return m_corridorsLoaded;
 }
 
+QMap<QString, QStringList> PropagationData::allRegionsByContinent() const
+{
+    QMap<QString, QSet<QString>> continentSets;
+
+    for (auto it = gridRegions.constBegin(); it != gridRegions.constEnd(); ++it)
+    {
+        const GridRegionInfo &info = it.value();
+        if (!info.region.isEmpty() && !info.name.isEmpty())
+            continentSets[info.region].insert(info.name);
+    }
+
+    QMap<QString, QStringList> result;
+    for (auto it = continentSets.constBegin(); it != continentSets.constEnd(); ++it)
+    {
+        QStringList sorted = it.value().values();
+        sorted.sort();
+        result.insert(it.key(), sorted);
+    }
+
+    return result;
+}
+
 QString PropagationData::latlonToGrid2(double lat, double lon)
 {
     if (qIsNaN(lat) || qIsNaN(lon)

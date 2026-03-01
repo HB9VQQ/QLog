@@ -3,6 +3,8 @@
 #include <QSqlRecord>
 #include <QLayoutItem>
 #include <QLabel>
+#include <QFrame>
+#include <QPushButton>
 
 #include "DxFilterDialog.h"
 #include "ui_DxFilterDialog.h"
@@ -11,6 +13,7 @@
 #include "core/MembershipQE.h"
 #include "DxWidget.h"
 #include "core/LogParam.h"
+#include "core/PropagationData.h"
 #include "data/BandPlan.h"
 
 MODULE_IDENTIFICATION("qlog.ui.dxfilterdialog");
@@ -102,6 +105,34 @@ DxFilterDialog::DxFilterDialog(QWidget *parent) :
     /**********/
 
     generateMembershipCheckboxes();
+
+    /*****************************/
+    /* Propagation Filter Tab    */
+    /*****************************/
+
+    // Minimum Score slider
+    ui->minScoreSlider->setValue(LogParam::getDXCFilterMinScore());
+    ui->minScoreLabel->setText(QString::number(ui->minScoreSlider->value()));
+    connect(ui->minScoreSlider, &QSlider::valueChanged, this, [this](int value) {
+        ui->minScoreLabel->setText(QString::number(value));
+    });
+
+    // Spotter Sub-Region checkboxes (dynamic)
+    ui->spotterRegionGroupBox->setChecked(LogParam::getDXCFilterRegionEnabled());
+    generateRegionCheckboxes();
+
+    // Select All / Deselect All buttons
+    connect(ui->selectAllRegionsBtn, &QPushButton::clicked, this, [this]() {
+        for (QCheckBox *cb : static_cast<const QList<QCheckBox*>&>(regionCheckBoxes))
+            cb->setChecked(true);
+    });
+    connect(ui->deselectAllRegionsBtn, &QPushButton::clicked, this, [this]() {
+        for (QCheckBox *cb : static_cast<const QList<QCheckBox*>&>(regionCheckBoxes))
+            cb->setChecked(false);
+    });
+
+    // Sort by Score
+    ui->sortByScoreCheckbox->setChecked(LogParam::getDXCFilterSortByScore());
 }
 
 void DxFilterDialog::accept()
@@ -195,6 +226,21 @@ void DxFilterDialog::accept()
     }
     LogParam::setDXCFilterMemberlists(memberList);
 
+    /*****************************/
+    /* Propagation Filter Tab    */
+    /*****************************/
+    LogParam::setDXCFilterMinScore(ui->minScoreSlider->value());
+    LogParam::setDXCFilterRegionEnabled(ui->spotterRegionGroupBox->isChecked());
+
+    QStringList excludedRegions;
+    for (QCheckBox *cb : static_cast<const QList<QCheckBox*>&>(regionCheckBoxes))
+    {
+        if (!cb->isChecked())
+            excludedRegions << cb->text();
+    }
+    LogParam::setDXCFilterExcludedRegions(excludedRegions);
+    LogParam::setDXCFilterSortByScore(ui->sortByScoreCheckbox->isChecked());
+
     done(QDialog::Accepted);
 }
 
@@ -229,6 +275,71 @@ void DxFilterDialog::generateMembershipCheckboxes()
     }
 
     ui->memberGroupBox->setChecked(!currentFilter.isEmpty());
+}
+
+void DxFilterDialog::generateRegionCheckboxes()
+{
+    FCT_IDENTIFICATION;
+
+    PropagationData *pd = PropagationData::instance();
+    QMap<QString, QStringList> regionsByContinent = pd->allRegionsByContinent();
+
+    if (regionsByContinent.isEmpty())
+    {
+        ui->regionCheckboxLayout->addWidget(
+            new QLabel(tr("Propagation data not available yet")));
+        return;
+    }
+
+    const QStringList &excludedRegions = LogParam::getDXCFilterExcludedRegions();
+
+    // Preferred continent display order (Europe first for typical EU users)
+    const QStringList continentOrder = {
+        QStringLiteral("Europe"),
+        QStringLiteral("Asia"),
+        QStringLiteral("Africa"),
+        QStringLiteral("North America"),
+        QStringLiteral("South America"),
+        QStringLiteral("Oceania"),
+        QStringLiteral("Pacific")
+    };
+
+    bool firstGroup = true;
+
+    for (const QString &continent : continentOrder)
+    {
+        if (!regionsByContinent.contains(continent))
+            continue;
+
+        const QStringList &regions = regionsByContinent.value(continent);
+
+        // Separator between groups
+        if (!firstGroup)
+        {
+            QFrame *line = new QFrame();
+            line->setFrameShape(QFrame::HLine);
+            line->setFrameShadow(QFrame::Sunken);
+            ui->regionCheckboxLayout->addWidget(line);
+        }
+        firstGroup = false;
+
+        // Bold continent header
+        QLabel *header = new QLabel(QString("<b>%1</b>").arg(continent));
+        ui->regionCheckboxLayout->addWidget(header);
+
+        // Checkboxes in a grid
+        QGridLayout *grid = new QGridLayout();
+        int idx = 0;
+        for (const QString &regionName : regions)
+        {
+            QCheckBox *cb = new QCheckBox(regionName);
+            cb->setChecked(!excludedRegions.contains(regionName));
+            regionCheckBoxes.append(cb);
+            grid->addWidget(cb, idx / REGION_MAXCOLUMNS, idx % REGION_MAXCOLUMNS);
+            idx++;
+        }
+        ui->regionCheckboxLayout->addLayout(grid);
+    }
 }
 
 DxFilterDialog::~DxFilterDialog()

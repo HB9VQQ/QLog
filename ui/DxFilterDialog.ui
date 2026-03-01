@@ -462,6 +462,157 @@
        </item>
       </layout>
      </widget>
+     <widget class="QWidget" name="propagation_filters">
+      <attribute name="title">
+       <string>Propagation</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_prop">
+       <item>
+        <widget class="QGroupBox" name="minScoreGroupBox">
+         <property name="title">
+          <string>Minimum Score</string>
+         </property>
+         <layout class="QHBoxLayout" name="minScoreLayout">
+          <item>
+           <widget class="QSlider" name="minScoreSlider">
+            <property name="toolTip">
+             <string>Hide spots with score below this value. 0 = show all.</string>
+            </property>
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>100</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="tickPosition">
+             <enum>QSlider::TicksBelow</enum>
+            </property>
+            <property name="tickInterval">
+             <number>10</number>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="minScoreLabel">
+            <property name="minimumSize">
+             <size>
+              <width>30</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>0</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="spotterRegionGroupBox">
+         <property name="title">
+          <string>Spotter Sub-Region</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+         <layout class="QVBoxLayout" name="spotterRegionVLayout">
+          <item>
+           <layout class="QHBoxLayout" name="regionButtonsLayout">
+            <item>
+             <widget class="QPushButton" name="selectAllRegionsBtn">
+              <property name="text">
+               <string>Select All</string>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="deselectAllRegionsBtn">
+              <property name="text">
+               <string>Deselect All</string>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="regionButtonsSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QScrollArea" name="regionScrollArea">
+            <property name="widgetResizable">
+             <bool>true</bool>
+            </property>
+            <widget class="QWidget" name="regionScrollContents">
+             <layout class="QVBoxLayout" name="regionCheckboxLayout"/>
+            </widget>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="sortOrderGroupBox">
+         <property name="title">
+          <string>Sort Order</string>
+         </property>
+         <layout class="QVBoxLayout" name="sortOrderLayout">
+          <item>
+           <widget class="QCheckBox" name="sortByScoreCheckbox">
+            <property name="text">
+             <string>Sort by Score (best first)</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_prop">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
     </widget>
    </item>
    <item>

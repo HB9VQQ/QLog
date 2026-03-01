@@ -1043,6 +1043,46 @@ void LogParam::setDXCExcludedBands(const QStringList &excluded)
     setParam("dxc/filter/excludedbands", excluded);
 }
 
+int LogParam::getDXCFilterMinScore()
+{
+    return getParam("dxc/filter/prop/minscore", 0).toInt();
+}
+
+void LogParam::setDXCFilterMinScore(int score)
+{
+    setParam("dxc/filter/prop/minscore", score);
+}
+
+QStringList LogParam::getDXCFilterExcludedRegions()
+{
+    return getParamStringList("dxc/filter/prop/excludedregions");
+}
+
+void LogParam::setDXCFilterExcludedRegions(const QStringList &list)
+{
+    setParam("dxc/filter/prop/excludedregions", list);
+}
+
+bool LogParam::getDXCFilterSortByScore()
+{
+    return getParam("dxc/filter/prop/sortbyscore", false).toBool();
+}
+
+void LogParam::setDXCFilterSortByScore(bool enabled)
+{
+    setParam("dxc/filter/prop/sortbyscore", enabled);
+}
+
+bool LogParam::getDXCFilterRegionEnabled()
+{
+    return getParam("dxc/filter/prop/regionenabled", false).toBool();
+}
+
+void LogParam::setDXCFilterRegionEnabled(bool enabled)
+{
+    setParam("dxc/filter/prop/regionenabled", enabled);
+}
+
 QSet<int> LogParam::getExportColumnSet(const QString &paramName, const QSet<int> &defaultValue)
 {
     QSet<int> set;

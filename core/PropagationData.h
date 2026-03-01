@@ -63,6 +63,9 @@ public:
     static QString latlonToGrid2(double lat, double lon);
     QString userGrid2() const;
 
+    // --- Region list for Phase 3 filter UI --------------------------------
+    QMap<QString, QStringList> allRegionsByContinent() const;
+
     bool isGridRegionsLoaded() const;
     bool isCorridorsLoaded()   const;
 

@@ -314,6 +314,16 @@ public:
     static void setDXCFilterModeRE(const QString &re);
     static QStringList getDXCExcludedBands();
     static void setDXCExcludedBands(const QStringList &excluded);
+
+    // Phase 3 — Propagation filter tab
+    static int getDXCFilterMinScore();
+    static void setDXCFilterMinScore(int score);
+    static QStringList getDXCFilterExcludedRegions();
+    static void setDXCFilterExcludedRegions(const QStringList &list);
+    static bool getDXCFilterSortByScore();
+    static void setDXCFilterSortByScore(bool enabled);
+    static bool getDXCFilterRegionEnabled();
+    static void setDXCFilterRegionEnabled(bool enabled);
     static bool setDXCTrendContinent(const QString &cont);
     static QString getDXCTrendContinent(const QString &def);
     static void removeDXCTrendContinent();
