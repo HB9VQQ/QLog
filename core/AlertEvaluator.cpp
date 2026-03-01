@@ -4,6 +4,7 @@
 
 #include "AlertEvaluator.h"
 #include "debug.h"
+#include "core/PropagationData.h"
 #include "data/DxSpot.h"
 #include "data/WsjtxEntry.h"
 #include "data/SpotAlert.h"
@@ -303,7 +304,8 @@ bool AlertRule::match(const WsjtxEntry &wsjtx) const
 
     if ( !(dxMember.size() == 1 && dxMember.front() == QLatin1String("*")))
     {
-        if ( !wsjtx.memberList2Set().intersects(dxMemberSet) ) return fail();
+        if ( !wsjtx.memberList2Set().intersects(dxMemberSet)
+             && !PropagationData::instance()->isExpedition(wsjtx.callsign) ) return fail();
     }
 
     qCDebug(runtime) << "Rule match - phase 1 - OK";
@@ -377,7 +379,8 @@ bool AlertRule::match(const DxSpot &spot) const
 
     if ( !(dxMember.size() == 1 && dxMember.front() == QLatin1String("*")) )
     {
-        if (!spot.memberList2Set().intersects(dxMemberSet)) return fail();
+        if (!spot.memberList2Set().intersects(dxMemberSet)
+            && !PropagationData::instance()->isExpedition(spot.callsign)) return fail();
     }
 
     qCDebug(runtime) << "Rule match - phase 1 - OK";

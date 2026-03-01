@@ -6,6 +6,7 @@
 #include <QJsonArray>
 #include <QTimer>
 #include <QUrl>
+#include <QSettings>
 
 #include "PropagationData.h"
 #include "debug.h"
@@ -35,6 +36,23 @@ PropagationData::PropagationData(QObject *parent)
 
     // --- Kick off: load grid regions, then corridors ---------------------
     fetchGridRegions();
+
+    // --- Phase 5: load ClubLog DXpedition callsigns ----------------------
+    // Load cached set immediately so spots arriving before the async fetch
+    // completes still get the DXpedition bypass.
+    QStringList cached = QSettings().value("propagation/expeditions").toStringList();
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
+    m_expeditionCallsigns = QSet<QString>(cached.begin(), cached.end());
+#else
+    m_expeditionCallsigns = QSet<QString>(QSet<QString>::fromList(cached));
+#endif
+    fetchExpeditions();
+
+    // Refresh expeditions list daily
+    QTimer *expTimer = new QTimer(this);
+    expTimer->setInterval(24 * 3600 * 1000);
+    connect(expTimer, &QTimer::timeout, this, &PropagationData::fetchExpeditions);
+    expTimer->start();
 }
 
 PropagationData::~PropagationData()
@@ -352,4 +370,86 @@ void PropagationData::handleCorridorsReply(QNetworkReply *reply)
                       << "targets for topic" << m_userTopic;
 
     emit dataUpdated();
+}
+
+// =========================================================================
+//  Phase 5: ClubLog DXpedition callsigns (LoTW filter bypass)
+// =========================================================================
+
+bool PropagationData::isExpedition(const QString &callsign) const
+{
+    return m_expeditionCallsigns.contains(callsign.toUpper());
+}
+
+void PropagationData::fetchExpeditions()
+{
+    FCT_IDENTIFICATION;
+
+    QUrl url("https://clublog.org/expeditions.php?api=1");
+    QNetworkRequest req(url);
+    req.setHeader(QNetworkRequest::UserAgentHeader,
+                  QString("QLog/%1").arg(VERSION).toUtf8());
+
+    QNetworkReply *reply = nam->get(req);
+    connect(reply, &QNetworkReply::finished,
+            this, [this, reply]() { handleExpeditionsReply(reply); });
+}
+
+void PropagationData::handleExpeditionsReply(QNetworkReply *reply)
+{
+    FCT_IDENTIFICATION;
+
+    reply->deleteLater();
+
+    if (reply->error() != QNetworkReply::NoError)
+    {
+        qWarning() << "PropagationData: ClubLog expeditions fetch failed:"
+                   << reply->errorString();
+        // Retry after one poll interval
+        QTimer::singleShot(PROPAGATION_POLL_INTERVAL_SEC * 1000, this,
+                           &PropagationData::fetchExpeditions);
+        return;
+    }
+
+    QJsonParseError parseErr;
+    QJsonDocument doc = QJsonDocument::fromJson(reply->readAll(), &parseErr);
+    if (parseErr.error != QJsonParseError::NoError || !doc.isArray())
+    {
+        qWarning() << "PropagationData: ClubLog expeditions parse error:"
+                   << parseErr.errorString();
+        return;
+    }
+
+    // Keep expeditions whose last QSO is within the past 12 months
+    QDateTime cutoff = QDateTime::currentDateTimeUtc().addMonths(-12);
+    QSet<QString> callsigns;
+
+    QJsonArray arr = doc.array();
+    for (const QJsonValue &entry : arr)
+    {
+        QJsonArray row = entry.toArray();
+        if (row.size() < 2) continue;
+
+        QString callsign = row.at(0).toString().toUpper();
+        QString lastQsoStr = row.at(1).toString();
+        QDateTime lastQso = QDateTime::fromString(lastQsoStr, "yyyy-MM-dd HH:mm:ss");
+        lastQso.setTimeSpec(Qt::UTC);
+
+        if (lastQso >= cutoff)
+            callsigns.insert(callsign);
+    }
+
+    m_expeditionCallsigns = callsigns;
+
+    // Persist for instant load on next startup
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
+    QSettings().setValue("propagation/expeditions",
+                         QStringList(m_expeditionCallsigns.begin(), m_expeditionCallsigns.end()));
+#else
+    QSettings().setValue("propagation/expeditions",
+                         m_expeditionCallsigns.toList());
+#endif
+
+    qCDebug(runtime) << "Loaded" << m_expeditionCallsigns.size()
+                      << "active DXpedition callsigns from ClubLog";
 }

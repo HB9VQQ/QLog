@@ -1996,7 +1996,8 @@ void DxWidget::processDxSpot(const QString &spotter,
          && spot.band.contains(bandregexp)
          && ( spot.status & dxccStatusFilter)
          && ( dxMemberFilter.size() == 0
-            || (dxMemberFilter.size() && spot.memberList2Set().intersects(dxMemberFilter)) )
+            || (dxMemberFilter.size() && spot.memberList2Set().intersects(dxMemberFilter))
+            || PropagationData::instance()->isExpedition(spot.callsign) )
          && spot.dupeCount == 0
          && (minScoreFilter == 0 || spotPassesMinScore(spot))
          && (!spotterRegionFilterEnabled || spotPassesRegionFilter(spot))

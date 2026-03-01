@@ -66,6 +66,9 @@ public:
     // --- Region list for Phase 3 filter UI --------------------------------
     QMap<QString, QStringList> allRegionsByContinent() const;
 
+    // --- DXpedition lookup (Phase 5: LoTW filter bypass) -----------------
+    bool isExpedition(const QString &callsign) const;
+
     bool isGridRegionsLoaded() const;
     bool isCorridorsLoaded()   const;
 
@@ -105,11 +108,16 @@ private:
 
     void fetchGridRegions();
     void fetchCorridors();
+    void fetchExpeditions();
     void resolveUserRegion();
+
+    // DXpedition callsigns (Phase 5)
+    QSet<QString> m_expeditionCallsigns;
 
 private slots:
     void handleGridRegionsReply(QNetworkReply *reply);
     void handleCorridorsReply(QNetworkReply *reply);
+    void handleExpeditionsReply(QNetworkReply *reply);
 };
 
 #endif // QLOG_CORE_PROPAGATIONDATA_H
