@@ -11,7 +11,7 @@ This edition adds features for the serious DXer — reliable mode filtering, pro
 - **Layer 1 — Independent mode groups:** FT4 and FT2 get their own checkboxes in the DX filter dialog (previously FT4 was lumped into Digital)
 - **Layer 2 — Frequency-range exclusion:** When FT8/FT4/FT2 checkboxes are unchecked, spots are also rejected by frequency range (±1 kHz around standard WSJT-X dial frequencies). This catches spots where the cluster node tagged the mode incorrectly or left it blank
 
-**Real-Time Propagation Awareness** — powered by [DX Index data](https://dx.hb9vqq.ch) from HB9VQQ:
+**Real-Time Propagation Awareness** — powered by DX Index data from HB9VQQ:
 
 - **Propagation Window** — dockable widget showing best band per target region from your QTH, updated every 5 minutes
 - **DX Table Columns** — Spotter Region, Score (0–100 workability index), and Distance columns in the DX cluster spot list
