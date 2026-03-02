@@ -150,15 +150,39 @@ DxFilterDialog::DxFilterDialog(QWidget *parent) :
         }
         else
         {
-            ui->afcheckbox_spotter->setChecked(true);
-            ui->ancheckbox_spotter->setChecked(true);
-            ui->ascheckbox_spotter->setChecked(true);
-            ui->eucheckbox_spotter->setChecked(true);
-            ui->nacheckbox_spotter->setChecked(true);
-            ui->occheckbox_spotter->setChecked(true);
-            ui->sacheckbox_spotter->setChecked(true);
+            // Only restore all continents if user manually unchecked Sub-Region,
+            // not when triggered by a continent checkbox click.
+            if (!continentTriggeredRegionOff)
+            {
+                ui->afcheckbox_spotter->setChecked(true);
+                ui->ancheckbox_spotter->setChecked(true);
+                ui->ascheckbox_spotter->setChecked(true);
+                ui->eucheckbox_spotter->setChecked(true);
+                ui->nacheckbox_spotter->setChecked(true);
+                ui->occheckbox_spotter->setChecked(true);
+                ui->sacheckbox_spotter->setChecked(true);
+            }
         }
     });
+
+    // Reverse: when any Spotter Continent checkbox is checked, disable Sub-Region filter.
+    // Guard flag prevents the spotterRegionGroupBox toggled(false) handler from
+    // restoring all continents to checked when triggered by a continent click.
+    auto uncheckRegionOnContinent = [this](bool checked) {
+        if (checked && ui->spotterRegionGroupBox->isChecked())
+        {
+            continentTriggeredRegionOff = true;
+            ui->spotterRegionGroupBox->setChecked(false);
+            continentTriggeredRegionOff = false;
+        }
+    };
+    connect(ui->afcheckbox_spotter, &QCheckBox::toggled, this, uncheckRegionOnContinent);
+    connect(ui->ancheckbox_spotter, &QCheckBox::toggled, this, uncheckRegionOnContinent);
+    connect(ui->ascheckbox_spotter, &QCheckBox::toggled, this, uncheckRegionOnContinent);
+    connect(ui->eucheckbox_spotter, &QCheckBox::toggled, this, uncheckRegionOnContinent);
+    connect(ui->nacheckbox_spotter, &QCheckBox::toggled, this, uncheckRegionOnContinent);
+    connect(ui->occheckbox_spotter, &QCheckBox::toggled, this, uncheckRegionOnContinent);
+    connect(ui->sacheckbox_spotter, &QCheckBox::toggled, this, uncheckRegionOnContinent);
 }
 
 void DxFilterDialog::accept()

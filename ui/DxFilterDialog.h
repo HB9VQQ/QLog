@@ -21,6 +21,7 @@ private:
     Ui::DxFilterDialog *ui;
     QList<QCheckBox*> memberListCheckBoxes;
     QList<QCheckBox*> regionCheckBoxes;
+    bool continentTriggeredRegionOff = false;
     const quint8 MAXCOLUMNS = 6;
     const quint8 REGION_MAXCOLUMNS = 4;
     void generateMembershipCheckboxes();
