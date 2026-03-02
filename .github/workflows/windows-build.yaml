@@ -17,6 +17,11 @@ on:
   push:
     branches: [master]
     tags: ['v*']                # e.g. v0.48.0-hb9vqq.1
+    paths-ignore:
+      - '*.md'
+      - 'doc/**'
+      - 'LICENSE'
+      - '.gitignore'
   workflow_dispatch:            # manual trigger button in Actions tab
 
 env:
