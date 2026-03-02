@@ -60,5 +60,11 @@ On first launch, the HB9VQQ Edition automatically detects and copies your existi
 
 This fork tracks upstream releases. When OK1MLG publishes updates, they are merged in and a new build is published here.
 
+## Support
+
+This is a personal project. I don't have the time or resources to test every possible combination of hardware, operating system, and software configuration. Support is provided on a **best-effort basis only** — I may look into issues when time permits, but there is no guarantee of a fix or response. No user is entitled to support of any kind.
+
+If something doesn't work, you're welcome to open an [issue](https://github.com/HB9VQQ/QLog/issues), but please understand that this fork is provided as-is. For issues related to core QLog functionality (not the features listed above), please report them to the [upstream project](https://github.com/foldynl/QLog/issues) instead.
+
 *73 de Roland, HB9VQQ*
 
