@@ -319,6 +319,16 @@ void DxFilterDialog::generateMembershipCheckboxes()
     }
 
     ui->memberGroupBox->setChecked(!currentFilter.isEmpty());
+
+    // Phase 5: hint about DXpedition bypass
+    QLabel *expHint = new QLabel(
+        tr("Active DXpeditions (via ClubLog) always pass through."),
+        ui->memberGroupBox);
+    QFont hintFont = expHint->font();
+    hintFont.setPointSizeF(hintFont.pointSizeF() * 0.85);
+    expHint->setFont(hintFont);
+    expHint->setStyleSheet("color: gray;");
+    ui->verticalLayout_9->addWidget(expHint);
 }
 
 void DxFilterDialog::generateRegionCheckboxes()
