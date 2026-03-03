@@ -164,7 +164,8 @@ void OnlineMapWidget::setIBPBand(VFOID , double, double ritFreq, double)
 {
     FCT_IDENTIFICATION;
 
-    runJavaScript(QString("currentBand=\"%1\";").arg(BandPlan::freq2Band(ritFreq).name));
+    currentBandName = BandPlan::freq2Band(ritFreq).name;
+    runJavaScript(QString("currentBand=\"%1\";").arg(currentBandName));
 }
 
 void OnlineMapWidget::antPositionChanged(double in_azimuth, double in_elevation)
@@ -186,7 +187,10 @@ void OnlineMapWidget::antPositionChanged(double in_azimuth, double in_elevation)
     if ( myGrid.isValid() )
     {
         double beamLen = 3000; // in km
-        double azimuthBeamWidth = AntProfilesManager::instance()->getCurProfile1().azimuthBeamWidth;
+        // Check if current band has a per-band offset (implies different antenna, e.g. dipole = bidirectional)
+        const AntProfile &antProfile = AntProfilesManager::instance()->getCurProfile1();
+        double azimuthBeamWidth = antProfile.azimuthBeamWidth;
+        bool bidirectional = !currentBandName.isEmpty() && antProfile.bandOffsets.contains(currentBandName);
 
         if ( contact )
         {
@@ -196,16 +200,17 @@ void OnlineMapWidget::antPositionChanged(double in_azimuth, double in_elevation)
                 beamLen = newBeamLen;
             }
         }
-        targetJavaScript += QString("drawAntPath({lat: %1, lng: %2}, %3, %4, %5);").arg(myGrid.getLatitude())
+        targetJavaScript += QString("drawAntPath({lat: %1, lng: %2}, %3, %4, %5, %6);").arg(myGrid.getLatitude())
                                                                                    .arg(myGrid.getLongitude())
                                                                                    .arg(beamLen)
                                                                                    .arg(in_azimuth)
-                                                                                   .arg(azimuthBeamWidth);
+                                                                                   .arg(azimuthBeamWidth)
+                                                                                   .arg(bidirectional ? "true" : "false");
     }
     else
     {
         // clean paths
-        targetJavaScript = QLatin1String("drawAntPath({}, 0, 0, 0);");
+        targetJavaScript = QLatin1String("drawAntPath({}, 0, 0, 0, false);");
     }
 
     runJavaScript(targetJavaScript);
@@ -226,7 +231,7 @@ void OnlineMapWidget::rotDisconnected()
     isRotConnected = false;
 
     // clear the Ant Path
-    runJavaScript(QLatin1String("drawAntPath({}, 0, 0, 0);"));
+    runJavaScript(QLatin1String("drawAntPath({}, 0, 0, 0, false);"));
 }
 
 void OnlineMapWidget::finishLoading(bool)

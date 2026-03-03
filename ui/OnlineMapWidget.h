@@ -62,6 +62,7 @@ private:
     const NewContactWidget *contact;
     double lastSeenAzimuth, lastSeenElevation;
     bool isRotConnected;
+    QString currentBandName;
 
     void runJavaScript(const QString &);
 };

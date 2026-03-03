@@ -242,8 +242,14 @@
                                            dashArray: '10,10', dashOffset: '10'});
     var antGeodesic2 = new L.Geodesic([],{ wrap: false, color: "orange", steps: 5,
                                            dashArray: '10,10', dashOffset: '10'});
+    var antGeodesic3 = new L.Geodesic([],{ wrap: false, color: "orange", steps: 5,
+                                           dashArray: '10,10', dashOffset: '10'});
+    var antGeodesic4 = new L.Geodesic([],{ wrap: false, color: "orange", steps: 5,
+                                           dashArray: '10,10', dashOffset: '10'});
     antPathLayer.addLayer(antGeodesic1);
     antPathLayer.addLayer(antGeodesic2);
+    antPathLayer.addLayer(antGeodesic3);
+    antPathLayer.addLayer(antGeodesic4);
 
     function drawPath(points) {
         geodesic.setLatLngs([]);
@@ -283,15 +289,24 @@
     }
 
     // generic function to render Ant Path
-    function drawAntPath(fromPoint, distance, azimuth, antAngle) {
+    function drawAntPath(fromPoint, distance, azimuth, antAngle, bidirectional) {
         let line1 = []; // empty field means delete the line;
         let line2 = []; // empty field means delete the line;
+        let line3 = []; // reverse beam edge 1 (bidirectional)
+        let line4 = []; // reverse beam edge 2 (bidirectional)
         if (fromPoint && Object.keys(fromPoint).length != 0) {
             line1 = [fromPoint, beamEndPosition(fromPoint, distance, azimuth - (antAngle/2))];
             line2 = [fromPoint, beamEndPosition(fromPoint, distance, azimuth + (antAngle/2))];
+            if (bidirectional) {
+                let reverseAz = azimuth + 180;
+                line3 = [fromPoint, beamEndPosition(fromPoint, distance, reverseAz - (antAngle/2))];
+                line4 = [fromPoint, beamEndPosition(fromPoint, distance, reverseAz + (antAngle/2))];
+            }
         }
         antGeodesic1.setLatLngs(line1);
         antGeodesic2.setLatLngs(line2);
+        antGeodesic3.setLatLngs(line3);
+        antGeodesic4.setLatLngs(line4);
         // too many movements if focusing also antenna path, disable it
         //fitQSOAnt();
     }
@@ -301,6 +316,8 @@
        if ( map.hasLayer(antPathLayer) ) {
           bound.extend(antGeodesic1.getBounds());
           bound.extend(antGeodesic2.getBounds());
+          bound.extend(antGeodesic3.getBounds());
+          bound.extend(antGeodesic4.getBounds());
        }
        //map.fitBounds(bound, {animate:false});
        map.panTo(bound.getCenter(), {animate:false});
