@@ -1,5 +1,6 @@
 #include <QNetworkDatagram>
 #include <QHostInfo>
+#include <cmath>
 #include "core/debug.h"
 #include "PSTRotDrv.h"
 #include "data/AntProfile.h"
@@ -136,15 +137,15 @@ void PSTRotDrv::setPosition(double in_azimuth, double in_elevation)
    if ( !opened )
        return;
 
-   // PSTRotDrv does NOT apply per-band offset on send.
-   // PstRotatorAz handles rotor command correction via its own BD setting.
-   // QLog only applies offset on readback for display correction.
+   double newAzimuth = in_azimuth - AntProfilesManager::instance()->getCurProfile1().getEffectiveAzimuthOffset(currentBand);
+   newAzimuth = fmod(newAzimuth + 360, 360);
+   qCDebug(runtime) << "Azimuth (with offset)" << newAzimuth << "band:" << currentBand;
 
    QString positionCommand = QString("<PST>"
                                      "<TRACK>0</TRACK>"
                                      "<AZIMUTH>%1</AZIMUTH>"
                                      "<ELEVATION>%2</ELEVATION>"
-                                     "</PST>").arg(in_azimuth, 0, 'f', 1)
+                                     "</PST>").arg(newAzimuth, 0, 'f', 1)
                                               .arg(in_elevation, 0, 'f', 1);
 
    sendCommand(positionCommand);
