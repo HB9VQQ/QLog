@@ -50,7 +50,7 @@ public slots:
 
 private slots:
     void setPositionImpl(double azimuth, double elevation);
-    void updateCurrentBandImpl(double frequency);
+    void updateCurrentBandImpl(const QString &bandName);
     void stopTimerImplt();
     void openImpl();
     void closeImpl();

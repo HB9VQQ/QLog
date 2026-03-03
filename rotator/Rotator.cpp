@@ -291,23 +291,27 @@ void Rotator::updateCurrentBand(double frequency)
 
     qCDebug(function_parameters) << frequency;
 
+    // freq2Band uses QSqlQuery - must run in the calling thread (main/rig)
+    // which has a database connection, not in rotThread
+    const Band &band = BandPlan::freq2Band(frequency);
+    qCDebug(runtime) << "Resolved band:" << band.name << "for freq:" << frequency;
+
     QMetaObject::invokeMethod(this, "updateCurrentBandImpl", Qt::QueuedConnection,
-                              Q_ARG(double, frequency));
+                              Q_ARG(QString, band.name));
 }
 
-void Rotator::updateCurrentBandImpl(double frequency)
+void Rotator::updateCurrentBandImpl(const QString &bandName)
 {
     FCT_IDENTIFICATION;
 
-    qCDebug(function_parameters) << frequency;
+    qCDebug(function_parameters) << bandName;
 
     MUTEXLOCKER;
 
     if ( rotDriver )
     {
-        const Band &band = BandPlan::freq2Band(frequency);
-        rotDriver->setCurrentBand(band.name);
-        qCDebug(runtime) << "Rotator current band updated to" << band.name;
+        rotDriver->setCurrentBand(bandName);
+        qCDebug(runtime) << "Rotator current band updated to" << bandName;
     }
 }
 
