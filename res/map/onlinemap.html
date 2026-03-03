@@ -158,9 +158,9 @@
 
 
     var language = navigator.language || navigator.userLanguage;
+    // --- Base map layers (HB9VQQ Edition) ---
+    // OSM (language-aware, original upstream behavior)
     var mapUrl;
-
-    // based on the language setting, qlog uses the map tile server
     if (language === 'de') {
       mapUrl = 'https://tile.openstreetmap.de/{z}/{x}/{y}.png';
     } else if (language === 'fr') {
@@ -168,10 +168,36 @@
     } else {
       mapUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
     }
-
-    L.tileLayer(mapUrl, {
+    var osmLayer = L.tileLayer(mapUrl, {
       attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>'
-    }).addTo(map);
+    });
+
+    // Esri Satellite + labels
+    var satBase = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 18
+    });
+    var satLabels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 18
+    });
+    var satelliteLayer = L.layerGroup([satBase, satLabels]);
+
+    // Esri Dark Gray + labels
+    var darkBase = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 16
+    });
+    var darkLabels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 16
+    });
+    var darkLayer = L.layerGroup([darkBase, darkLabels]);
+
+    // Default to satellite; layer switcher top-right
+    satelliteLayer.addTo(map);
+    L.control.layers({
+      "Satellite": satelliteLayer,
+      "Dark": darkLayer,
+      "OpenStreetMap": osmLayer
+    }, null, { position: 'topright' }).addTo(map);
+    map.attributionControl.addAttribution('&copy; <a href="https://www.esri.com/">Esri</a>');
 
     var maidenheadConfWorked = L.maidenheadConfWorked({color : 'rgba(255, 0, 0, 0.5)'}).addTo(map);
     var grayline = L.terminator({fillOpacity: 0.2})
