@@ -229,9 +229,13 @@ void PSTRotDrv::readPendingDatagrams()
             newElevation = data.mid(3).toDouble();
         else if ( data.startsWith("AZ") )
         {
-            newAzimuth = data.mid(3).toDouble();
-            // apply per-band offset for display (physical -> logical)
-            newAzimuth += AntProfilesManager::instance()->getCurProfile1().getEffectiveAzimuthOffset(currentBand);
+            double rawAzimuth = data.mid(3).toDouble();
+            double offset = AntProfilesManager::instance()->getCurProfile1().getEffectiveAzimuthOffset(currentBand);
+            qCDebug(runtime) << "AZ readback: raw=" << rawAzimuth
+                             << "band=" << currentBand
+                             << "offset=" << offset
+                             << "profile=" << AntProfilesManager::instance()->getCurProfile1().profileName;
+            newAzimuth = rawAzimuth + offset;
             newAzimuth = normalizeAzimuth(newAzimuth);
         }
 
