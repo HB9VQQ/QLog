@@ -310,8 +310,20 @@ void Rotator::updateCurrentBandImpl(const QString &bandName)
 
     if ( rotDriver )
     {
+        QString previousBand = rotDriver->getCurrentBand();
         rotDriver->setCurrentBand(bandName);
         qCDebug(runtime) << "Rotator current band updated to" << bandName;
+
+        // Re-send position with new band's offset so PstRotatorAz display updates
+        // and rotor repositions for the new antenna pattern (e.g. Yagi vs dipole)
+        if ( previousBand != bandName && rotDriver->isOpen() )
+        {
+            double currentAz = rotDriver->getAzimuth();
+            double currentEl = rotDriver->getElevation();
+            qCDebug(runtime) << "Band changed from" << previousBand << "to" << bandName
+                             << "- re-sending position" << currentAz << currentEl;
+            rotDriver->setPosition(currentAz, currentEl);
+        }
     }
 }
 

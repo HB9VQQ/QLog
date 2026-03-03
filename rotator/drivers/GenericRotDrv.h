@@ -22,6 +22,10 @@ public:
     virtual void stopTimers() = 0;
     double normalizeAzimuth(double azimuth) const;
     void setCurrentBand(const QString &band) { currentBand = band; }
+    QString getCurrentBand() const { return currentBand; }
+    double getAzimuth() const { return azimuth; }
+    double getElevation() const { return elevation; }
+    bool isOpen() const { return opened; }
 
 signals:
     void rotIsReady();
