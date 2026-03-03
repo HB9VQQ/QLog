@@ -1689,7 +1689,7 @@ void MainWindow::showAbout()
 
     QString aboutText = tr("<h1>QLog %1 — HB9VQQ Edition</h1>"
                            "<p><em>Fork maintained by Roland HB9VQQ<br/>"
-                           "FT8/FT4/FT2 frequency-range filtering</em></p>"
+                           "Build: %6</em></p>"
                            "<p>&copy; 2019 Thomas Gatzweiler DL2IC<br/>"
                            "&copy; 2021-2026 Ladislav Foldyna OK1MLG<br/>"
                            "&copy; 2025-2026 Michael Morgan AA5SH<br/>"
@@ -1718,7 +1718,7 @@ void MainWindow::showAbout()
     OSName.append(" Flatpak");
 #endif
 
-    aboutText = aboutText.arg(version, qVersion(), hamlibVersion, QSslSocket::sslLibraryVersionString(), OSName);
+    aboutText = aboutText.arg(version, qVersion(), hamlibVersion, QSslSocket::sslLibraryVersionString(), OSName, QString(GIT_HASH));
 
     QMessageBox::about(this, tr("About"), aboutText);
 }

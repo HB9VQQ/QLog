@@ -14,6 +14,10 @@ VERSION = 0.48.0
 
 DEFINES += VERSION=\\\"$$VERSION\\\"
 
+GIT_HASH = $$system(git rev-parse --short HEAD)
+isEmpty(GIT_HASH): GIT_HASH = "unknown"
+DEFINES += GIT_HASH=\\\"$$GIT_HASH\\\"
+
 # Define paths to HAMLIB. Leave empty if system libraries should be used
 #HAMLIBINCLUDEPATH =
 #HAMLIBLIBPATH =
