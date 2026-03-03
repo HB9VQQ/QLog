@@ -20,6 +20,9 @@
     html, body, #map {
       height: 100%;
     }
+    #map {
+      background: #0d1117;
+    }
     .leaflet-tooltip {
         border: 0px;
         color: #232D45;
@@ -176,14 +179,14 @@
     var satBase = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       maxZoom: 18
     });
-    var satLabels = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png', {
+    var satLabels = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}.png', {
       maxZoom: 20,
       subdomains: 'abcd'
     });
     var satelliteLayer = L.layerGroup([satBase, satLabels]);
 
     // CartoDB Dark Matter (clean dark tiles, labels included)
-    var darkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    var darkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
       maxZoom: 20,
       subdomains: 'abcd'
     });
