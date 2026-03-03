@@ -306,7 +306,7 @@ void Rotator::updateCurrentBandImpl(double frequency)
     if ( rotDriver )
     {
         const Band &band = BandPlan::freq2Band(frequency);
-        rotDriver->currentBand = band.name;
+        rotDriver->setCurrentBand(band.name);
         qCDebug(runtime) << "Rotator current band updated to" << band.name;
     }
 }

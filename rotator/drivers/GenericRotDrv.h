@@ -21,6 +21,7 @@ public:
     virtual void setPosition(double azimuth, double elevation) = 0;
     virtual void stopTimers() = 0;
     double normalizeAzimuth(double azimuth) const;
+    void setCurrentBand(const QString &band) { currentBand = band; }
 
 signals:
     void rotIsReady();
