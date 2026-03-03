@@ -1,7 +1,9 @@
 #include <QNetworkDatagram>
 #include <QHostInfo>
+#include <cmath>
 #include "core/debug.h"
 #include "PSTRotDrv.h"
+#include "data/AntProfile.h"
 
 #define MUTEXLOCKER     qCDebug(runtime) << "Waiting for Rot Drv mutex"; \
                         QMutexLocker locker(&drvLock); \
@@ -135,11 +137,15 @@ void PSTRotDrv::setPosition(double in_azimuth, double in_elevation)
    if ( !opened )
        return;
 
+   double newAzimuth = in_azimuth - AntProfilesManager::instance()->getCurProfile1().getEffectiveAzimuthOffset(currentBand);
+   newAzimuth = fmod(newAzimuth + 360, 360);
+   qCDebug(runtime) << "Azimuth (with offset)" << newAzimuth << "band:" << currentBand;
+
    QString positionCommand = QString("<PST>"
                                      "<TRACK>0</TRACK>"
                                      "<AZIMUTH>%1</AZIMUTH>"
                                      "<ELEVATION>%2</ELEVATION>"
-                                     "</PST>").arg(in_azimuth, 0, 'f', 1)
+                                     "</PST>").arg(newAzimuth, 0, 'f', 1)
                                               .arg(in_elevation, 0, 'f', 1);
 
    sendCommand(positionCommand);
@@ -222,7 +228,12 @@ void PSTRotDrv::readPendingDatagrams()
         if ( data.startsWith("EL") )
             newElevation = data.mid(3).toDouble();
         else if ( data.startsWith("AZ") )
+        {
             newAzimuth = data.mid(3).toDouble();
+            // apply per-band offset for display (physical -> logical)
+            newAzimuth += AntProfilesManager::instance()->getCurProfile1().getEffectiveAzimuthOffset(currentBand);
+            newAzimuth = normalizeAzimuth(newAzimuth);
+        }
 
         qCDebug(runtime) << "PSTRotator Positioning"
                          << newAzimuth
