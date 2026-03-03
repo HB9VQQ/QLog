@@ -8,7 +8,7 @@
 
 #include "BandOffsetDialog.h"
 #include "data/BandPlan.h"
-#include "ui/component/BaseDoubleSpinBox.h"
+#include <QDoubleSpinBox>
 #include "core/debug.h"
 
 MODULE_IDENTIFICATION("qlog.ui.bandoffsetdialog");
@@ -88,7 +88,7 @@ void BandOffsetDialog::populateTable(const QMap<QString, double> &offsets)
             bandCombo->setCurrentIndex(idx);
         table->setCellWidget(row, 0, bandCombo);
 
-        BaseDoubleSpinBox *offsetSpin = new BaseDoubleSpinBox();
+        QDoubleSpinBox *offsetSpin = new QDoubleSpinBox();
         offsetSpin->setRange(-180.0, 180.0);
         offsetSpin->setDecimals(1);
         offsetSpin->setSuffix("°");
@@ -129,7 +129,7 @@ void BandOffsetDialog::addRow()
 
     table->setCellWidget(row, 0, bandCombo);
 
-    BaseDoubleSpinBox *offsetSpin = new BaseDoubleSpinBox();
+    QDoubleSpinBox *offsetSpin = new QDoubleSpinBox();
     offsetSpin->setRange(-180.0, 180.0);
     offsetSpin->setDecimals(1);
     offsetSpin->setSuffix("°");
@@ -157,7 +157,7 @@ QMap<QString, double> BandOffsetDialog::getBandOffsets() const
     for ( int row = 0; row < table->rowCount(); row++ )
     {
         QComboBox *bandCombo = qobject_cast<QComboBox*>(table->cellWidget(row, 0));
-        BaseDoubleSpinBox *offsetSpin = qobject_cast<BaseDoubleSpinBox*>(table->cellWidget(row, 1));
+        QDoubleSpinBox *offsetSpin = qobject_cast<QDoubleSpinBox*>(table->cellWidget(row, 1));
 
         if ( bandCombo && offsetSpin )
         {
