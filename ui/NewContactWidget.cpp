@@ -2285,6 +2285,7 @@ void NewContactWidget::frequencyTXChanged()
     {
         qCDebug(runtime) << "Manual mode enabled - ignore freq change";
         updateTXBand(xitFreq);
+        Rotator::instance()->updateCurrentBand(xitFreq);
         /* Do not change RX */
         return;
     }

@@ -2,6 +2,7 @@
 #include "core/debug.h"
 #include "rotator/drivers/HamlibRotDrv.h"
 #include "rotator/drivers/PSTRotDrv.h"
+#include "data/BandPlan.h"
 
 MODULE_IDENTIFICATION("qlog.rotator.rotator");
 
@@ -282,6 +283,32 @@ void Rotator::setPosition(double azimuth, double elevation)
 
     QMetaObject::invokeMethod(this, "setPositionImpl", Qt::QueuedConnection,
                               Q_ARG(double,azimuth), Q_ARG(double,elevation));
+}
+
+void Rotator::updateCurrentBand(double frequency)
+{
+    FCT_IDENTIFICATION;
+
+    qCDebug(function_parameters) << frequency;
+
+    QMetaObject::invokeMethod(this, "updateCurrentBandImpl", Qt::QueuedConnection,
+                              Q_ARG(double, frequency));
+}
+
+void Rotator::updateCurrentBandImpl(double frequency)
+{
+    FCT_IDENTIFICATION;
+
+    qCDebug(function_parameters) << frequency;
+
+    MUTEXLOCKER;
+
+    if ( rotDriver )
+    {
+        const Band &band = BandPlan::freq2Band(frequency);
+        rotDriver->currentBand = band.name;
+        qCDebug(runtime) << "Rotator current band updated to" << band.name;
+    }
 }
 
 

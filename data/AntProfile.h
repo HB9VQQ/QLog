@@ -4,6 +4,7 @@
 #include <QString>
 #include <QObject>
 #include <QDataStream>
+#include <QMap>
 
 #include "data/ProfileManager.h"
 
@@ -18,6 +19,9 @@ public:
     QString description;
     double azimuthBeamWidth;
     double azimuthOffset;
+    QMap<QString, double> bandOffsets;  // per-band azimuth offset overrides
+
+    double getEffectiveAzimuthOffset(const QString &band) const;
 
     bool operator== (const AntProfile &profile);
     bool operator!= (const AntProfile &profile);

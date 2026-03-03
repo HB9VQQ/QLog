@@ -43,7 +43,7 @@ private:
     QString fixIntlField(QSqlQuery &query, const QString &columName, const QString &columnNameIntl);
     bool refreshUploadStatusTrigger();
 
-    static const int latestVersion = 35;
+    static const int latestVersion = 36;
 
     friend class MigrationSqlTest_FriendAccessor;
 };

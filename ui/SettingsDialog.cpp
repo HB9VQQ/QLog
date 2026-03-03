@@ -28,6 +28,7 @@
 #include "rig/RigCaps.h"
 #include "rotator/Rotator.h"
 #include "rotator/RotCaps.h"
+#include "ui/BandOffsetDialog.h"
 #include "core/LogParam.h"
 #include "data/Callsign.h"
 #include "core/MembershipQE.h"
@@ -1111,6 +1112,7 @@ void SettingsDialog::addAntProfile()
     profile.description = ui->antDescEdit->toPlainText();
     profile.azimuthBeamWidth = ui->antAzBeamWidthSpinBox->value();
     profile.azimuthOffset = ui->antAzOffsetSpinBox->value();
+    profile.bandOffsets = tempBandOffsets;
 
     antProfManager->addProfile(profile.profileName, profile);
 
@@ -1155,6 +1157,11 @@ void SettingsDialog::doubleClickAntProfile(QModelIndex i)
     ui->antDescEdit->setPlainText(profile.description);
     ui->antAzBeamWidthSpinBox->setValue(profile.azimuthBeamWidth);
     ui->antAzOffsetSpinBox->setValue(profile.azimuthOffset);
+    tempBandOffsets = profile.bandOffsets;
+
+    ui->antBandOffsetsButton->setText(tempBandOffsets.isEmpty()
+                                       ? tr("Edit...")
+                                       : tr("Edit... (%1)").arg(tempBandOffsets.size()));
 
     ui->antAddProfileButton->setText(tr("Modify"));
 
@@ -1170,8 +1177,25 @@ void SettingsDialog::clearAntProfileForm()
     ui->antDescEdit->clear();
     ui->antAzBeamWidthSpinBox->setValue(0.0);
     ui->antAzOffsetSpinBox->setValue(0.0);
+    tempBandOffsets.clear();
+    ui->antBandOffsetsButton->setText(tr("Edit..."));
 
     ui->antAddProfileButton->setText(tr("Add"));
+}
+
+void SettingsDialog::editBandOffsets()
+{
+    FCT_IDENTIFICATION;
+
+    BandOffsetDialog dlg(tempBandOffsets, this);
+
+    if ( dlg.exec() == QDialog::Accepted )
+    {
+        tempBandOffsets = dlg.getBandOffsets();
+        ui->antBandOffsetsButton->setText(tempBandOffsets.isEmpty()
+                                           ? tr("Edit...")
+                                           : tr("Edit... (%1)").arg(tempBandOffsets.size()));
+    }
 }
 
 void SettingsDialog::addCWKeyProfile()

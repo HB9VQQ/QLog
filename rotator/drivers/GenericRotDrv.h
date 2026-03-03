@@ -35,6 +35,7 @@ protected:
     bool opened;
     double azimuth;
     double elevation;
+    QString currentBand;
 };
 
 #endif // QLOG_ROTATOR_DRIVERS_GENERICROTDRV_H

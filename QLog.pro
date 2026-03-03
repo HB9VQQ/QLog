@@ -175,6 +175,7 @@ SOURCES += \
         ui/RigWidget.cpp \
         ui/RotatorWidget.cpp \
         ui/SettingsDialog.cpp \
+        ui/BandOffsetDialog.cpp \
         ui/ShowUploadDialog.cpp \
         ui/StatisticsWidget.cpp \
         ui/UploadQSODialog.cpp \
@@ -332,6 +333,7 @@ HEADERS += \
         ui/RigWidget.h \
         ui/RotatorWidget.h \
         ui/SettingsDialog.h \
+        ui/BandOffsetDialog.h \
         ui/StatisticsWidget.h \
         ui/UploadQSODialog.h \
         ui/WebEnginePage.h \

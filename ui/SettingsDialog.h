@@ -69,6 +69,7 @@ public slots:
     void refreshAntProfilesView();
     void doubleClickAntProfile(QModelIndex);
     void clearAntProfileForm();
+    void editBandOffsets();
 
     void addCWKeyProfile();
     void delCWKeyProfile();
@@ -143,6 +144,7 @@ private:
     RigProfilesManager *rigProfManager;
     RotProfilesManager *rotProfManager;
     AntProfilesManager *antProfManager;
+    QMap<QString, double> tempBandOffsets;  // temporary storage while editing antenna profile
     CWKeyProfilesManager *cwKeyProfManager;
     CWShortcutProfilesManager *cwShortcutProfManager;
     RotUsrButtonsProfilesManager *rotUsrButtonsProfManager;

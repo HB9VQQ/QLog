@@ -208,13 +208,13 @@ void HamlibRotDrv::setPosition(double in_azimuth, double in_elevation)
     }
 
     double newElevation = in_elevation;
-    double newAzimuth = in_azimuth - AntProfilesManager::instance()->getCurProfile1().azimuthOffset;
+    double newAzimuth = in_azimuth - AntProfilesManager::instance()->getCurProfile1().getEffectiveAzimuthOffset(currentBand);
     // offset interval is -180 to 180
     // azimuth input interval is 0 to 360
     // min value is -180
     // max valus is 540
     newAzimuth = fmod(newAzimuth + 360, 360);
-    qCDebug(runtime) << "Azimuth (with offset)" << newAzimuth;
+    qCDebug(runtime) << "Azimuth (with offset)" << newAzimuth << "band:" << currentBand;
 
     /**********************************/
     /* Rotator specific modifications */
@@ -332,7 +332,7 @@ void HamlibRotDrv::checkAzEl()
             double newAzimuth = az;
             double newElevation = el;
             // Azimuth Normalization (-180,180) -> (0,360) - ADIF defined interval is 0-360
-            newAzimuth += AntProfilesManager::instance()->getCurProfile1().azimuthOffset;
+            newAzimuth += AntProfilesManager::instance()->getCurProfile1().getEffectiveAzimuthOffset(currentBand);
             newAzimuth = normalizeAzimuth(newAzimuth);
 
              qCDebug(runtime) << "Rot Position: " << newAzimuth << newElevation;

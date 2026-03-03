@@ -46,9 +46,11 @@ public slots:
 
     void sendState();
     void setPosition(double azimuth, double elevation);
+    void updateCurrentBand(double frequency);
 
 private slots:
     void setPositionImpl(double azimuth, double elevation);
+    void updateCurrentBandImpl(double frequency);
     void stopTimerImplt();
     void openImpl();
     void closeImpl();
