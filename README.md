@@ -29,7 +29,6 @@ This edition adds features for the serious DXer — reliable mode filtering, pro
 - Extends the antenna profile (Settings → Equipment → Antennas) with per-band azimuth offsets
 - Solves the Spiderbeam Yagi + 40m add-on dipole problem: the dipole radiates broadside (perpendicular to boom) while Yagi elements radiate end-fire, requiring a −90° offset on 40m
 - When QLog sends a rotor command, it applies the per-band offset if defined, otherwise the global offset
-- Equivalent to PstRotatorAz's "ANT 2 BD-90" feature, built into QLog
 
 **Satellite/Dark Map Tiles** — replaces the default OpenStreetMap tiles with Esri imagery:
 
