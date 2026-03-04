@@ -38,6 +38,8 @@ This edition adds features for the serious DXer — reliable mode filtering, pro
 
 **DX Cluster UTC Clock** — compact HH:MM UTC clock centered in the DX Cluster header bar
 
+**DXCC/Station Statistics Mode Visibility** — right-click the statistics table to hide/show CW, DIGITAL, or PHONE rows. Setting persists across sessions
+
 
 ## Download
 
