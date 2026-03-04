@@ -597,6 +597,11 @@ DxWidget::DxWidget(QWidget *parent) :
     reconnectTimer.setSingleShot(true);
     connect(&reconnectTimer, &QTimer::timeout, this, &DxWidget::connectCluster);
 
+    // UTC clock in header
+    updateUtcClock();
+    connect(&utcClockTimer, &QTimer::timeout, this, &DxWidget::updateUtcClock);
+    utcClockTimer.start(1000);
+
     restoreWidgetSetting();
 
     ui->actionConnectOnStartup->setChecked(getAutoconnectServer());
@@ -623,6 +628,13 @@ void DxWidget::toggleConnect()
         }
         connectCluster();
     }
+}
+
+void DxWidget::updateUtcClock()
+{
+    FCT_IDENTIFICATION;
+
+    ui->utcClockLabel->setText(QDateTime::currentDateTimeUtc().toString("HH:mm") + "Z");
 }
 
 void DxWidget::connectCluster()

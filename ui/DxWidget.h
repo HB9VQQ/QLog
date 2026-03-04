@@ -163,6 +163,7 @@ private slots:
 
     void displayedColumns();
     void trendDoubleClicked(int row, int column);
+    void updateUtcClock();
 
 signals:
     void tuneDx(DxSpot);
@@ -219,6 +220,7 @@ private:
     QSqlRecord lastQSO;
     quint8 reconnectAttempts;
     QTimer reconnectTimer;
+    QTimer utcClockTimer;
     DXCConnectionState connectionState;
     DxServerString *connectedServerString;
     QHash<QString, QHash<QString, QHash<QString, int>>> receivedTrendData;
