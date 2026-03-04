@@ -80,7 +80,7 @@ void DxccTableWidget::updateDxTable(const QString &condition,
         QStringList quoted;
         for ( const QString &mode : hidden )
             quoted << QString("'%1'").arg(mode);
-        modeFilter = QString(" WHERE m.dxcc NOT IN (%1)").arg(quoted.join(","));
+        modeFilter = QString(" WHERE dxcc NOT IN (%1)").arg(quoted.join(","));
     }
 
     QString stmt = QString("WITH dxcc_summary AS "
