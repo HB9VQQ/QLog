@@ -31,6 +31,14 @@ This edition adds features for the serious DXer — reliable mode filtering, pro
 - When QLog sends a rotor command, it applies the per-band offset if defined, otherwise the global offset
 - Equivalent to PstRotatorAz's "ANT 2 BD-90" feature, built into QLog
 
+**Satellite/Dark Map Tiles** — replaces the default OpenStreetMap tiles with Esri imagery:
+
+- Three base layers via layer control: Satellite (Esri World Imagery + labels), Dark (Esri Dark Gray Canvas), and OpenStreetMap
+- Default is Satellite, matching the [dxmap.hb9vqq.ch](https://dxmap.hb9vqq.ch) propagation map aesthetic
+- Dark theme CSS filter only applies to OpenStreetMap — satellite and dark tiles render unmangled
+
+**DX Cluster UTC Clock** — compact HH:MM UTC clock centered in the DX Cluster header bar
+
 
 ## Download
 
