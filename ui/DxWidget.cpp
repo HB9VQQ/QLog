@@ -600,7 +600,7 @@ DxWidget::DxWidget(QWidget *parent) :
     // UTC clock in header
     updateUtcClock();
     connect(&utcClockTimer, &QTimer::timeout, this, &DxWidget::updateUtcClock);
-    utcClockTimer.start(1000);
+    utcClockTimer.start(10000);
 
     restoreWidgetSetting();
 
@@ -634,7 +634,7 @@ void DxWidget::updateUtcClock()
 {
     FCT_IDENTIFICATION;
 
-    ui->utcClockLabel->setText(QDateTime::currentDateTimeUtc().toString("HH:mm") + "Z");
+    ui->utcClockLabel->setText(QDateTime::currentDateTimeUtc().toString("HH:mm") + " UTC");
 }
 
 void DxWidget::connectCluster()
