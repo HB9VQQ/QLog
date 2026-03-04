@@ -4,6 +4,8 @@
 #include <QDate>
 #include <QSqlError>
 #include <QSqlQuery>
+#include <QContextMenuEvent>
+#include <QAction>
 #include "models/DxccTableModel.h"
 #include "DxccTableWidget.h"
 #include "core/debug.h"
@@ -12,7 +14,8 @@
 
 MODULE_IDENTIFICATION("qlog.ui.dxcctablewidget");
 
-DxccTableWidget::DxccTableWidget(QWidget *parent) : QTableView(parent)
+DxccTableWidget::DxccTableWidget(QWidget *parent) : QTableView(parent),
+    hasLastQuery(false)
 {
     FCT_IDENTIFICATION;
 
@@ -21,6 +24,7 @@ DxccTableWidget::DxccTableWidget(QWidget *parent) : QTableView(parent)
     this->setObjectName("dxccTableView");
     this->setModel(dxccTableModel);
     this->verticalHeader()->setVisible(false);
+    this->setContextMenuPolicy(Qt::DefaultContextMenu);
 }
 
 void DxccTableWidget::clear()
@@ -39,6 +43,12 @@ void DxccTableWidget::updateDxTable(const QString &condition,
     FCT_IDENTIFICATION;
 
     qCDebug(function_parameters) << condition << conditionValue;
+
+    // Cache for refresh after mode toggle
+    lastCondition = condition;
+    lastConditionValue = conditionValue;
+    lastHighlightedBand = highlightedBand;
+    hasLastQuery = true;
 
     const QList<Band>& dxccBands = BandPlan::bandsList(false, true);
 
@@ -62,6 +72,17 @@ void DxccTableWidget::updateDxTable(const QString &condition,
         stmt_band_part2 << QString(" c.'%0_eqsl' || c.'%0_lotw'|| c.'%0_paper' as '%0'").arg(band.name);
     }
 
+    // Build mode filter for hidden modes
+    QStringList hidden = hiddenModes();
+    QString modeFilter;
+    if ( !hidden.isEmpty() )
+    {
+        QStringList quoted;
+        for ( const QString &mode : hidden )
+            quoted << QString("'%1'").arg(mode);
+        modeFilter = QString(" WHERE m.dxcc NOT IN (%1)").arg(quoted.join(","));
+    }
+
     QString stmt = QString("WITH dxcc_summary AS "
                            "             ("
                            "			  SELECT  "
@@ -73,12 +94,13 @@ void DxccTableWidget::updateDxTable(const QString &condition,
                            " SELECT m.dxcc,"
                            "	   %4 "
                            " FROM (SELECT DISTINCT dxcc"
-                           "	   FROM modes) m"
+                           "	   FROM modes%5) m"
                            "        LEFT OUTER JOIN dxcc_summary c ON c.dxcc = m.dxcc "
                            " ORDER BY m.dxcc").arg(stmt_band_part1.join(","),
                                                    filter,
                                                    condition.arg(conditionValue.toString()),
-                                                   stmt_band_part2.join(","));
+                                                   stmt_band_part2.join(","),
+                                                   modeFilter);
 
     qCDebug(runtime) << stmt;
 
@@ -122,4 +144,50 @@ void DxccTableWidget::setDxcc(int dxcc, const Band &highlightedBand)
         updateDxTable("c.dxcc = %1", dxcc, highlightedBand);
     else
         clear();
+}
+
+void DxccTableWidget::contextMenuEvent(QContextMenuEvent *event)
+{
+    FCT_IDENTIFICATION;
+
+    QMenu menu(this);
+    menu.setTitle(tr("Visible Modes"));
+
+    QStringList allModes = {"CW", "DIGITAL", "PHONE"};
+    QStringList hidden = hiddenModes();
+
+    for ( const QString &mode : allModes )
+    {
+        QAction *action = menu.addAction(mode);
+        action->setCheckable(true);
+        action->setChecked(!hidden.contains(mode));
+    }
+
+    QAction *selected = menu.exec(event->globalPos());
+    if ( !selected )
+        return;
+
+    QString mode = selected->text();
+    if ( selected->isChecked() )
+        hidden.removeAll(mode);
+    else
+        hidden.append(mode);
+
+    setHiddenModes(hidden);
+
+    // Refresh the table with updated mode filter
+    if ( hasLastQuery )
+        updateDxTable(lastCondition, lastConditionValue, lastHighlightedBand);
+}
+
+QStringList DxccTableWidget::hiddenModes() const
+{
+    QSettings settings;
+    return settings.value("dxcctable/hiddenmodes").toStringList();
+}
+
+void DxccTableWidget::setHiddenModes(const QStringList &modes)
+{
+    QSettings settings;
+    settings.setValue("dxcctable/hiddenmodes", modes);
 }
