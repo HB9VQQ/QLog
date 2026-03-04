@@ -97,10 +97,8 @@ void OnlineMapWidget::changeTheme(int theme, bool isDark)
     //theme == 1 dart
     themeJavaScript
         = (isDark == 1)
-              ? QLatin1String(
-                    "map.getPanes().tilePane.style.webkitFilter=\"brightness(0.6) invert(1) "
-                    "contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.9)\";")
-              : QLatin1String("map.getPanes().tilePane.style.webkitFilter=\"\";");
+              ? QLatin1String("applyThemeFilter(true);")
+              : QLatin1String("applyThemeFilter(false);");
 
     runJavaScript(themeJavaScript);
 }

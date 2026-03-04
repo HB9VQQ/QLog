@@ -160,7 +160,7 @@ QString MapWebChannelHandler::generateMapMenuJS(bool gridLayer,
         options << "\"" + tr("Path") + "\": pathLayer";
 
     QString ret = QString("var layerControl = new L.Control.Layers("
-                          "{\"Dark\": darkLayer, \"Satellite\": satelliteLayer, \"OpenStreetMap\": osmLayer},"
+                          "{\"Satellite\": satelliteLayer, \"Dark\": darkLayer, \"OpenStreetMap\": osmLayer},"
                           "{ %1 },{}).addTo(map);").arg(options.join(","));
 
     qCDebug(runtime) << ret;
