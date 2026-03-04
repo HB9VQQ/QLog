@@ -33,6 +33,8 @@ void DxccTableWidget::clear()
 
     dxccTableModel->clear();
     dxccTableModel->setQuery(QString());
+    setMinimumHeight(0);
+    setMaximumHeight(QWIDGETSIZE_MAX);
     show();
 }
 
@@ -118,6 +120,14 @@ void DxccTableWidget::updateDxTable(const QString &condition,
         dxccTableModel->setHeaderData(i+1, Qt::Horizontal, dxccBands.at(i).name);
     }
     setColumnWidth(0,65);
+
+    // Resize table height to fit content (header + visible rows)
+    int height = horizontalHeader()->height();
+    for ( int i = 0; i < dxccTableModel->rowCount(); i++ )
+        height += rowHeight(i);
+    height += 2; // frame border
+    setFixedHeight(height);
+
     show();
 }
 
