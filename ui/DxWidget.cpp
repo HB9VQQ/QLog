@@ -1995,25 +1995,53 @@ void DxWidget::processDxSpot(const QString &spotter,
 
     emit newSpot(spot);
 
+    /* DEBUG: log every spot for specific callsigns to diagnose filter issues */
+    if (spot.callsign.contains("3Y0K", Qt::CaseInsensitive))
+    {
+        qWarning() << "SPOT ARRIVED:" << spot.callsign << spot.freq << spot.band
+                    << "mode=" << spot.modeGroupString << "spotter=" << spot.spotter
+                    << "spotterCont=" << spot.dxcc_spotter.cont
+                    << "dxCont=" << spot.dxcc.cont
+                    << "status=" << spot.status;
+    }
+
     /* Frequency-based exclusion: catch FT8/FT4/FT2 spots that slipped through
      * mode detection (blank mode, "DATA", wrong tag from cluster node) */
     bool freqExcluded = (excludeFT8ByFreq && BandPlan::isInFT8FreqRange(spot.freq))
                      || (excludeFT4ByFreq && BandPlan::isInFT4FreqRange(spot.freq))
                      || (excludeFT2ByFreq && BandPlan::isInFT2FreqRange(spot.freq));
 
-    if ( spot.modeGroupString.contains(moderegexp)
-         && !freqExcluded
-         && spot.dxcc.cont.contains(contregexp)
-         && (spotterRegionFilterEnabled || spot.dxcc_spotter.cont.contains(spottercontregexp))
-         && spot.band.contains(bandregexp)
-         && ( spot.status & dxccStatusFilter)
-         && ( dxMemberFilter.size() == 0
+    /* Diagnostic: log every filter condition for spots that fail */
+    bool f1 = spot.modeGroupString.contains(moderegexp);
+    bool f2 = !freqExcluded;
+    bool f3 = spot.dxcc.cont.contains(contregexp);
+    bool f4 = (spotterRegionFilterEnabled || spot.dxcc_spotter.cont.contains(spottercontregexp));
+    bool f5 = spot.band.contains(bandregexp);
+    bool f6 = ( spot.status & dxccStatusFilter);
+    bool f7 = ( dxMemberFilter.size() == 0
             || (dxMemberFilter.size() && spot.memberList2Set().intersects(dxMemberFilter))
-            || PropagationData::instance()->isExpedition(spot.callsign) )
-         && spot.dupeCount == 0
-         && (minScoreFilter == 0 || spotPassesMinScore(spot))
-         && (!spotterRegionFilterEnabled || spotPassesRegionFilter(spot))
-        )
+            || PropagationData::instance()->isExpedition(spot.callsign) );
+    bool f8 = spot.dupeCount == 0;
+    bool f9 = (minScoreFilter == 0 || spotPassesMinScore(spot));
+    bool f10 = (!spotterRegionFilterEnabled || spotPassesRegionFilter(spot));
+
+    bool allPass = f1 && f2 && f3 && f4 && f5 && f6 && f7 && f8 && f9 && f10;
+
+    if (!allPass)
+    {
+        if (spot.callsign.contains("3Y0K", Qt::CaseInsensitive))
+        {
+            qWarning() << "FILTER REJECT:" << spot.callsign << spot.freq << spot.band
+                         << "mode=" << spot.modeGroupString << "spotter=" << spot.spotter
+                         << "status=" << spot.status
+                         << "| mode:" << f1 << "freq:" << f2 << "cont:" << f3
+                         << "spotCont:" << f4 << "band:" << f5 << "status:" << f6
+                         << "member:" << f7 << "dupe:" << f8 << "score:" << f9
+                         << "region:" << f10;
+        }
+    }
+
+    if ( allPass )
     {
         if ( dxTableModel->addEntry(spot, deduplicateSpots, deduplicatetime, deduplicatefreq) )
             emit newFilteredSpot(spot);
