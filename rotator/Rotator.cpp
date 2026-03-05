@@ -316,7 +316,8 @@ void Rotator::updateCurrentBandImpl(const QString &bandName)
 
         // Re-send position with new band's offset so PstRotatorAz display updates
         // and rotor repositions for the new antenna pattern (e.g. Yagi vs dipole)
-        if ( previousBand != bandName && rotDriver->isOpen() )
+        // Skip when previousBand is empty (startup) — azimuth is still 0 from init
+        if ( !previousBand.isEmpty() && previousBand != bandName && rotDriver->isOpen() )
         {
             double currentAz = rotDriver->getAzimuth();
             double currentEl = rotDriver->getElevation();
