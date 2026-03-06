@@ -158,6 +158,7 @@ void RotatorWidget::positionChanged(double in_azimuth, double in_elevation)
     if ( waitingFirstValue )
     {
         waitingFirstValue = false;
+        requestedAzimuth = in_azimuth;
         if ( requestedAzimuthNeedle) requestedAzimuthNeedle->setRotation(in_azimuth);
     }
     ui->gotoDoubleSpinBox->blockSignals(true);
