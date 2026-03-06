@@ -344,4 +344,3 @@ void Rotator::setPositionImpl(double azimuth, double elevation)
 }
 
 #undef MUTEXLOCKER
-// build trigger
