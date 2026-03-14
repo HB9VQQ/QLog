@@ -448,6 +448,7 @@ const QString BandPlan::MODE_GROUP_STRING_FT2 = "FT2";
 const QString BandPlan::MODE_GROUP_STRING_PHONE = "PHONE";
 const QString BandPlan::MODE_GROUP_STRING_FTx = "FTx";
 bool BandPlan::isFTxMode(const QString &mode) { return mode == "FT8" || mode == "FT4" || mode == "FT2"; }
+bool BandPlan::isFTxBandMode(const BandPlanMode &mode) { return mode == BAND_MODE_FT8 || mode == BAND_MODE_FT4 || mode == BAND_MODE_FT2; }
 
 /* Frequency exclusion ranges for FT8, FT4, and FT2 spots.
  * These use wider margins (±1 kHz) than the band plan table to reliably
