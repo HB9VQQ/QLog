@@ -27,6 +27,7 @@
 #include "core/MembershipQE.h"
 #include "service/kstchat/KSTChat.h"
 #include "data/Data.h"
+#include "core/LogDatabase.h"
 #include "service/GenericCallbook.h"
 
 void migrateFromUpstreamQLog();
@@ -160,7 +161,7 @@ static bool openDatabase() {
     FCT_IDENTIFICATION;
 
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName(Data::dbFilename());
+    db.setDatabaseName(LogDatabase::dbFilename());
     db.setConnectOptions("QSQLITE_ENABLE_REGEXP");
 
     if (!db.open()) {

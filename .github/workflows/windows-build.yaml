@@ -221,7 +221,9 @@ jobs:
           "PTHREADINCLUDEPATH=%VCPKG_INC%" ^
           "PTHREADLIBPATH=%VCPKG_LIB%" ^
           "ZLIBINCLUDEPATH=%VCPKG_INC%" ^
-          "ZLIBLIBPATH=%VCPKG_LIB%"
+          "ZLIBLIBPATH=%VCPKG_LIB%" ^
+          "OPENSSLINCLUDEPATH=%OPENSSL_DIR%\include" ^
+          "OPENSSLLIBPATH=%OPENSSL_DIR%\lib\VC\x64\MD"
         nmake
 
     # —— 9. Package with windeployqt ——————————————————————————

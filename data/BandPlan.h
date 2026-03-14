@@ -14,6 +14,8 @@ public:
     static const QString MODE_GROUP_STRING_FT4;
     static const QString MODE_GROUP_STRING_FT2;
     static const QString MODE_GROUP_STRING_PHONE;
+    static const QString MODE_GROUP_STRING_FTx;
+    static bool isFTxMode(const QString &mode);
 
     enum BandPlanMode
     {
