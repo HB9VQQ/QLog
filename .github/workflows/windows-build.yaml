@@ -42,7 +42,7 @@ jobs:
 
     # —— 2. MSVC 2022 x64 environment ————————————————————————
     - name: Setup MSVC
-      uses: ilammy/msvc-dev-cmd@v1
+      uses: TheMrMilchmann/setup-msvc-dev@v4
       with:
         arch: x64
 
