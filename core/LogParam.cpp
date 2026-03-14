@@ -1470,6 +1470,67 @@ QStringList LogParam::deserializeStringList(const QString &input, QChar delimite
     return result;
 }
 
+
+bool LogParam::setBandmapShowEmergency(const QString &widgetID, bool show)
+{
+    return setParam("bandmap/" + widgetID + "/showemergency", show);
+}
+
+bool LogParam::getBandmapShowEmergency(const QString &widgetID)
+{
+    return getParam("bandmap/" + widgetID + "/showemergency", true).toBool();
+}
+
+QString LogParam::getUploadLoTWLocation()
+{
+    return getParam("uploadqso/lotw/location").toString();
+}
+
+void LogParam::setUploadLoTWLocation(const QString &location)
+{
+    setParam("uploadqso/lotw/location", location);
+}
+
+QByteArray LogParam::getEncryptedPasswords()
+{
+    return getParam("security/encryptedpasswords").toByteArray();
+}
+
+void LogParam::setEncryptedPasswords(const QByteArray &data)
+{
+    setParam("security/encryptedpasswords", data);
+}
+
+void LogParam::removeEncryptedPasswords()
+{
+    removeParamGroup("security/encryptedpasswords");
+}
+
+QString LogParam::getSourcePlatform()
+{
+    return getParam("sourceplatform").toString();
+}
+
+void LogParam::setSourcePlatform(const QString &platform)
+{
+    setParam("sourceplatform", platform);
+}
+
+void LogParam::removeSourcePlatform()
+{
+    removeParamGroup("sourceplatform");
+}
+
+bool LogParam::isLoTWTQSLPathKey(const QString &key)
+{
+    return key == "services/lotw/callbook/tqsl";
+}
+
+bool LogParam::isLoTWQSLPathKey(const QString &key)
+{
+    return key == "services/lotw/callbook/tqsl";
+}
+
 QCache<QString, QVariant> LogParam::localCache(300);
 
 QMutex LogParam::cacheMutex;
