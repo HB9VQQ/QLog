@@ -48,4 +48,5 @@ private:
     friend class MigrationSqlTest_FriendAccessor;
 };
 
+typedef Migration DBSchemaMigration;
 #endif // QLOG_CORE_MIGRATION_H

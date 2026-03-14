@@ -92,7 +92,7 @@ jobs:
         git clone --depth 1 https://github.com/microsoft/vcpkg.git C:\vcpkg
         cd /d C:\vcpkg
         call bootstrap-vcpkg.bat
-        vcpkg install pthreads:x64-windows zlib:x64-windows
+        vcpkg install pthreads:x64-windows zlib:x64-windows openssl:x64-windows
 
     # —— 6. Build QtKeychain from source ——————————————————————
     - name: Build QtKeychain
@@ -222,8 +222,8 @@ jobs:
           "PTHREADLIBPATH=%VCPKG_LIB%" ^
           "ZLIBINCLUDEPATH=%VCPKG_INC%" ^
           "ZLIBLIBPATH=%VCPKG_LIB%" ^
-          "OPENSSLINCLUDEPATH=%OPENSSL_DIR%\include" ^
-          "OPENSSLLIBPATH=%OPENSSL_DIR%\lib\VC\x64\MD"
+          "OPENSSLINCLUDEPATH=%VCPKG_INC%" ^
+          "OPENSSLLIBPATH=%VCPKG_LIB%"
         nmake
 
     # —— 9. Package with windeployqt ——————————————————————————
