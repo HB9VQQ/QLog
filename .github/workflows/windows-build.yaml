@@ -26,7 +26,7 @@ on:
 
 env:
   QT_VERSION: '6.10.2'
-  HAMLIB_VERSION: '4.6.5'
+  HAMLIB_VERSION: '4.7.0'
 
 jobs:
   build:

@@ -16,7 +16,7 @@ public:
     Migration(QObject *parent = nullptr) : QObject(parent) {}
     bool run(bool force = false);
     static bool backupDatabase(bool force = false);
-    static const int latestVersion = 36;
+    static const int latestVersion = 38;
 
 private:
     bool functionMigration(int version);
