@@ -31,6 +31,8 @@ public slots:
     void toggleQslSendVia();
     void toggleSentStatus();
     void toggleUserFilter();
+    void toggleStationProfile();
+    void onStationProfileChange();
     void runExport();
     void myCallsignChanged(const QString &myCallsign);
     void showColumnsSetting();

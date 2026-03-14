@@ -4,26 +4,29 @@
 #include <QObject>
 #include <QSqlRecord>
 #include "service/GenericQSOUploader.h"
+#include "core/CredentialStore.h"
 
 class QNetworkReply;
 class QNetworkAccessManager;
 
-
-class CloudlogBase
+class CloudlogBase : public SecureServiceBase<CloudlogBase>
 {
+protected:
+    const static QString SECURE_STORAGE_API_KEY;
+    const static QString CONFIG_USERNAME_API_CONST;
+
 public:
     explicit CloudlogBase() {};
     virtual ~CloudlogBase() {};
 
-    static QString getLogbookAPIKey(const QString &internalUsername = CloudlogBase::CONFIG_USERNAME_API_CONST);
-    static void saveLogbookAPIKey(const QString& newKey, const QString &internalUsername = CloudlogBase::CONFIG_USERNAME_API_CONST);
+    DECLARE_SECURE_SERVICE(CloudlogBase);
+
+    static QString getUsername() {return CONFIG_USERNAME_API_CONST;}
+    static QString getLogbookAPIKey();
+    static void saveLogbookAPIKey(const QString& newKey);
 
     static QString getAPIEndpoint();
     static void setAPIEndpoint(const QString &endpoint);
-
-protected:
-    const static QString SECURE_STORAGE_API_KEY;
-    const static QString CONFIG_USERNAME_API_CONST;
 };
 
 class CloudlogUploader : public GenericQSOUploader, private CloudlogBase

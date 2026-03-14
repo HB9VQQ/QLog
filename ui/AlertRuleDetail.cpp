@@ -232,7 +232,7 @@ void AlertRuleDetail::save()
         if ( ui->cwcheckbox->isChecked() ) modeRE.append("|" + BandPlan::MODE_GROUP_STRING_CW);
         if ( ui->phonecheckbox->isChecked() ) modeRE.append("|" + BandPlan::MODE_GROUP_STRING_PHONE);
         if ( ui->digitalcheckbox->isChecked() ) modeRE.append("|" + BandPlan::MODE_GROUP_STRING_DIGITAL);
-        if ( ui->ft8checkbox->isChecked() ) modeRE.append("|" + BandPlan::MODE_GROUP_STRING_FT8);
+        if ( ui->ftxcheckbox->isChecked() ) modeRE.append("|" + BandPlan::MODE_GROUP_STRING_FTx);
     }
 
     rule.mode = modeRE;
@@ -503,7 +503,7 @@ void AlertRuleDetail::loadRule(const QString &ruleName)
             ui->cwcheckbox->setChecked(modeRE.contains("|" + BandPlan::MODE_GROUP_STRING_CW));
             ui->phonecheckbox->setChecked(modeRE.contains("|" + BandPlan::MODE_GROUP_STRING_PHONE));
             ui->digitalcheckbox->setChecked(modeRE.contains("|" + BandPlan::MODE_GROUP_STRING_DIGITAL));
-            ui->ft8checkbox->setChecked(modeRE.contains("|" + BandPlan::MODE_GROUP_STRING_FT8));
+            ui->ftxcheckbox->setChecked(modeRE.contains("|" + BandPlan::MODE_GROUP_STRING_FTx));
         }
 
         /********

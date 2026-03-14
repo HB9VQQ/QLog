@@ -396,6 +396,18 @@ QSODetailDialog::QSODetailDialog(const QSqlRecord &qso,
     mapper->toFirst();
     blockMappedWidgetSignals(false);
 
+    /* County completer — initialize for the loaded record's DXCC */
+    {
+        const int dxcc = ui->countryBox->currentValue(1).toInt();
+        updateCountyCompleter(dxcc);
+    }
+
+    connect(ui->countryBox, &SmartSearchBox::currentTextChanged,
+            this, [this](const QString &)
+    {
+        updateCountyCompleter(ui->countryBox->currentValue(1).toInt());
+    });
+
     setReadOnlyMode(true);
 
     drawDXOnMap(ui->callsignEdit->text(), Gridsquare(ui->gridEdit->text()));
@@ -480,6 +492,8 @@ void QSODetailDialog::editButtonPressed()
     else
     {
         setReadOnlyMode(false);
+        /* Re-set completer — Qt loses the completer connection after setReadOnly(true/false) cycle */
+        updateCountyCompleter(ui->countryBox->currentValue(1).toInt());
         timeLockDiff = ui->dateTimeOnEdit->dateTime().msecsTo(ui->dateTimeOffEdit->dateTime());
         freqLockDiff = ui->freqTXEdit->value() -  ui->freqRXEdit->value();
     }
@@ -1534,6 +1548,15 @@ void QSODetailDialog::enableWidgetChangeHandlers()
             });
         }
     }
+}
+
+void QSODetailDialog::updateCountyCompleter(int dxcc)
+{
+    FCT_IDENTIFICATION;
+
+    ui->countyEdit->setCompleter(nullptr);
+    countyCompleter.reset(Data::createCountyCompleter(dxcc, this));
+    ui->countyEdit->setCompleter(countyCompleter.data());
 }
 
 void QSODetailDialog::lookupButtonWaitingStyle(bool isWaiting)

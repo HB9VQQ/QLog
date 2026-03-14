@@ -9,6 +9,18 @@ Group: Productivity/Hamradio/Logging
 Source: https://github.com/foldynl/QLog/archive/refs/tags/v%{version}.tar.gz#/qlog-%{version}.tar.gz
 URL: https://github.com/foldynl/QLog/wiki
 Packager: Ladislav Foldyna <ok1mlg@gmail.com>
+BuildRequires: gcc-c++
+BuildRequires: make
+BuildRequires: pkg-config
+BuildRequires: qt5-qtbase-devel
+BuildRequires: qt5-qtcharts-devel
+BuildRequires: qt5-qtwebengine-devel
+BuildRequires: qt5-qtserialport-devel
+BuildRequires: qt5-qtwebsockets-devel
+BuildRequires: hamlib-devel
+BuildRequires: libsqlite3x-devel
+BuildRequires: openssl-devel
+BuildRequires: qtkeychain-qt5-devel
 
 %description
 QLog is an Amateur Radio logging application for Linux, Windows and Mac OS. It
@@ -17,7 +29,6 @@ is based on the Qt 5 framework and uses SQLite as database backend.
 %prep
 %global debug_package %{nil}
 %setup
-%setup -T -D -b 1 
 
 
 %build
@@ -38,8 +49,32 @@ INSTALL_ROOT=%{buildroot} make -f Makefile install
 %{_datadir}/applications/qlog.desktop
 %{_datadir}//icons/hicolor/256x256/apps/qlog.png
 %{_metainfodir}/*
+%{_mandir}/man1/*
 
 %changelog
+* Fri Mar 13 2026 Ladislav Foldyna - 0.49.0-1
+- [NEW] - Added Pack and Unpack Data and Setting - Computer to Computer Migration (issue #535)
+- [NEW] - Added Rig Sharing via Rigctld (PR #736 issue #159 @aa5sh @foldynl)
+- [NEW] - Added QSL Gallery
+- [NEW] - QSO Filter - Added REGEXP operator
+- [NEW] - Settings - TQSL - Added Path auto-detect and validation
+- [NEW] - Upload QSO - Added LoTW Station Location Combo (PR #929 @TrgoSk @foldynl)
+- [NEW] - QSO Export - Added Station Profile Filter
+- [NEW] - BandMap shows emergency frequencies (issue #462)
+- [NEW] - Added Speed Up Down Macros - WinKey and CWDaemon (issue #491)
+- [NEW] - Settings Winkey v2 - Added PaddleOnly Sidetone (issue #739)
+- [NEW] - Settings Winkey v2 and CWDaemon - Added Sidetone Freq
+- [NEW] - All County fields contain Completer for Ukraine, US, Japan, NZ, Spanish, Russia (PR #785 @aa5sh @foldynl)
+- [NEW] - Added County Awards for Ukraine, US, Japan, NZ, Spanish, Russia (PR #785 @aa5sh @foldynl)
+- [NEW] - ADIF 3.1.7 - Added new modes FT2, FREEDATA, RIBBIT_PIX, RIBBIT_SMS (issue #934)
+- [CHANGED] - Generic FTx for FT8/FT4 (FT2) in Alert and DXC filter (issue #937)
+- [CHANGED] - LoTW QSL matching algorithm uses Mode and Mode Group matching (issue #942)
+- [CHANGED] - Reduced download period for DXCC Entities from 21 to 7 days
+- LogbookWidget: Delete Performance Optimization
+- Fixed Awards POTA Activator Filter
+- Fixed man page
+- Fixing SATmode Activity is blank (issue #948)
+
 * Fri Jan 30 2026 Ladislav Foldyna - 0.48.0-1
 - [NEW] - Rig Widget - tuning rig with mouse (issue #855)
 - [NEW] - Awards - Added User Filter Combo (issue #870)

@@ -40,7 +40,7 @@ bool CWDummyKey::sendText(const QString &text)
 
     if ( isUsed )
     {
-        qInfo() << "Sending " << text;
+        qInfo() << "Sending " << stripSpeedMarkers(text);
     }
 
     return true;

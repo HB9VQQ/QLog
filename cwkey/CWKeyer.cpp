@@ -109,6 +109,8 @@ void CWKeyer::__openCWKey()
                               newProfile.keyMode,
                               newProfile.defaultSpeed,
                               newProfile.paddleSwap,
+                              newProfile.paddleOnlySidetone,
+                              newProfile.sidetoneFrequency,
                               this);
         break;
     case CWKey::MORSEOVERCAT:
@@ -121,6 +123,7 @@ void CWKeyer::__openCWKey()
                                 newProfile.netport,
                                 newProfile.keyMode,
                                 newProfile.defaultSpeed,
+                                newProfile.sidetoneFrequency,
                                 this);
         break;
     case CWKey::FLDIGI_KEYER:

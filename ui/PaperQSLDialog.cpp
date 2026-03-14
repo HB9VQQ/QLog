@@ -149,6 +149,28 @@ void PaperQSLDialog::addFileToDialog(const QString &inFile)
 
     fileLayout->addWidget(openButton);
 
+    /*******************/
+    /* Favorite Button */
+    /*******************/
+    const qulonglong contactId = dialogQSORecord.value("id").toULongLong();
+    const bool isFav = qsl->isFavorite(contactId, QSLObject::QSLFILE, file.fileName());
+
+    QPushButton *favButton = new QPushButton(isFav ? QStringLiteral("\u2605") : QStringLiteral("\u2606"), this);
+    favButton->setObjectName(QString::fromUtf8("favButton%1").arg(fileCount));
+    favButton->setFixedWidth(30);
+    favButton->setToolTip(tr("Toggle Favorite"));
+
+    fileLayout->addWidget(favButton);
+
+    connect(favButton, &QPushButton::clicked, this, [this, favButton, file]()
+    {
+        const qulonglong cId = dialogQSORecord.value("id").toULongLong();
+        const bool currentFav = (favButton->text() == QStringLiteral("\u2605"));
+
+        if ( qsl->setFavorite(cId, QSLObject::QSLFILE, file.fileName(), !currentFav) )
+            favButton->setText(!currentFav ? QStringLiteral("\u2605") : QStringLiteral("\u2606"));
+    });
+
     connect(openButton, &QPushButton::clicked, this, [this, file]()
     {
         if ( !tempDir.isValid() )

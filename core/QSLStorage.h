@@ -4,6 +4,9 @@
 #include <QObject>
 #include <QSqlRecord>
 #include <QVariant>
+#include <QList>
+#include <QMap>
+#include <QDateTime>
 
 class QSLObject
 {
@@ -52,6 +55,17 @@ private:
     QByteArray blob;
 };
 
+struct QSLGalleryItem
+{
+    qulonglong contactId;
+    QSLObject::SourceType source;
+    QString name;
+    QString callsign;
+    QDateTime startTime;
+    QString country;
+    bool favorite = false;
+};
+
 class QSLStorage : public QObject
 {
     Q_OBJECT
@@ -68,6 +82,38 @@ public:
     QSLObject getQSL(const QSqlRecord &qso,
                      const QSLObject::SourceType source,
                      const QString &qslName) const;
+
+    struct FilterValues
+    {
+        QMap<QString, int> countries; // localizedName -> dxcc_id
+        QMap<QString, QStringList> yearMonths; // year -> sorted list of months ("01".."12")
+        QStringList bands;
+        QStringList modes;
+        QStringList continents;
+    };
+
+    FilterValues getDistinctFilterValues() const;
+
+    QList<QSLGalleryItem> getGalleryItems() const;
+    QList<QSLGalleryItem> getGalleryItemsByDxcc(int dxcc) const;
+    QList<QSLGalleryItem> getGalleryItemsByYear(const QString &year) const;
+    QList<QSLGalleryItem> getGalleryItemsByYearMonth(const QString &year, const QString &month) const;
+    QList<QSLGalleryItem> getGalleryItemsFavorite() const;
+    QList<QSLGalleryItem> getGalleryItemsByBand(const QString &band) const;
+    QList<QSLGalleryItem> getGalleryItemsByMode(const QString &mode) const;
+    QList<QSLGalleryItem> getGalleryItemsByContinent(const QString &continent) const;
+
+    QByteArray getQSLData(qulonglong contactId, int source, const QString &name) const;
+
+    bool setFavorite(qulonglong contactId, QSLObject::SourceType source, const QString &name, bool favorite);
+    bool isFavorite(qulonglong contactId, QSLObject::SourceType source, const QString &name) const;
+
+private:
+    const QString galleryBaseSQL=
+        "SELECT q.contactid, q.source, q.name, c.callsign, c.start_time, translate_to_locale(c.country), q.favorite "
+        "FROM contacts_qsl_cards q "
+        "JOIN contacts c ON q.contactid = c.id ";
+
 };
 
 #endif // QLOG_CORE_QSLSTORAGE_H

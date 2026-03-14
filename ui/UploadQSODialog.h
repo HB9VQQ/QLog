@@ -12,6 +12,7 @@
 #include "core/LogLocale.h"
 #include "service/GenericQSOUploader.h"
 #include "service/cloudlog/Cloudlog.h"
+#include "service/lotw/Lotw.h"
 
 namespace Ui {
 class UploadQSODialog;
@@ -29,6 +30,7 @@ private slots:
     void showQSODetails();
     void setEQSLSettingVisible(bool visible);
     void setClublogSettingVisible(bool visible);
+    void setLotwSettingVisible(bool visible);
     void setWavelogSettingVisible(bool visible);
     void startUploadQueue();
     void executeQuery();
@@ -134,7 +136,9 @@ private:
     QStandardItemModel *detailQSOsModel;
     UploadTask currentTask;
     QMap<uint, CloudlogUploader::StationProfile> availableWavelogStationIDs;
+    QList<TQSLStationLocation> tqslLocations;
     bool executeQueryEnabled;
+    void updateLotwLocationWarning();
     void setQSODetailVisible(bool visible);
     void loadDialogState();
     void saveDialogState();

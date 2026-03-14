@@ -94,6 +94,7 @@ private:
     void clearFreqMark(QGraphicsPolygonItem **);
     void drawFreqMark(const double, const double, const QColor&, QGraphicsPolygonItem **);
     void drawTXRXMarks(double);
+    void drawEmergencyMarkers(double step);
     void drawMarkers(double frequency);
     void resizeEvent(QResizeEvent * event) override;
     bool eventFilter(QObject *obj, QEvent *event) override;
@@ -114,6 +115,7 @@ private:
 
 private slots:
     void centerRXActionChecked(bool);
+    void emergencyMarkersActionChecked(bool);
     void spotClicked(const QString&, double, BandPlan::BandPlanMode);
     void showContextMenu(const QPoint&);
     void updateStationTimer();
@@ -138,6 +140,7 @@ private:
     QGraphicsPolygonItem* rxMark;
     QGraphicsPolygonItem* txMark;
     bool keepRXCenter;
+    bool showEmergencyMarkers;
     LogLocale locale;
     quint32 pendingSpots;
     qint64 lastStationUpdate;

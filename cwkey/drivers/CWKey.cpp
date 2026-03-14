@@ -1,4 +1,5 @@
 #include <QHostInfo>
+#include <QRegularExpression>
 #include "CWKey.h"
 #include "core/debug.h"
 
@@ -8,6 +9,7 @@ CWKey::CWKey(CWKeyModeID mode, qint32 defaultWPM, QObject *parent) :
     QObject(parent),
     keyMode(mode),
     defaultWPMSpeed(defaultWPM),
+    currentWPM(static_cast<qint16>(defaultWPM)),
     stopSendingCap(false),
     echoCharsCap(false),
     rigMustConnectedCap(false),
@@ -60,6 +62,27 @@ bool CWKey::isNetworkKey(const CWKeyTypeID &type)
 
     qCDebug(runtime) << ret;
     return ret;
+}
+
+const QRegularExpression &CWKey::speedMarkerRE()
+{
+    static QRegularExpression re("<(\\++|-+)>");
+    return re;
+}
+
+qint16 CWKey::applySpeedMarker(const QString &markerCapture)
+{
+    qint16 delta = static_cast<qint16>(
+        markerCapture.length() * ( markerCapture[0] == QLatin1Char('+') ? 5 : -5 ));
+    currentWPM = qBound(minWPM(), static_cast<qint16>(currentWPM + delta), maxWPM());
+    return currentWPM;
+}
+
+QString CWKey::stripSpeedMarkers(const QString &text)
+{
+    QString result(text);
+    result.remove(speedMarkerRE());
+    return result;
 }
 
 QDataStream& operator>>(QDataStream &in, CWKey::CWKeyModeID &v)

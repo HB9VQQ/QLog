@@ -8,10 +8,11 @@
 #include <QMutexLocker>
 #include <QSqlDriver>
 #include <QMessageBox>
+#include <QCoreApplication>
 
 #include "MembershipQE.h"
 #include "core/debug.h"
-#include "data/Data.h"
+#include "core/LogDatabase.h"
 #include "data/Callsign.h"
 #include "LogParam.h"
 
@@ -506,7 +507,7 @@ void ClubStatusQuery::getClubStatus(const QString &in_callsign,
     {
         qCDebug(runtime)  << "Opening connection to DB";
         QSqlDatabase db1 = QSqlDatabase::addDatabase("QSQLITE", dbConnectionName);
-        db1.setDatabaseName(Data::dbFilename());
+        db1.setDatabaseName(LogDatabase::dbFilename());
         dbConnected = db1.open();
         if ( ! dbConnected)
         {

@@ -6,28 +6,32 @@
 #include <QSqlRecord>
 #include "service/GenericCallbook.h"
 #include "service/GenericQSOUploader.h"
+#include "core/CredentialStore.h"
 
 class QNetworkAccessManager;
 class QNetworkReply;
 
-class QRZBase
+class QRZBase : public SecureServiceBase<QRZBase>
 {
-public:
-    explicit QRZBase() {};
-    virtual ~QRZBase() {};
-
-    static const QString getUsername();
-    static const QString getPassword();
-    static void saveUsernamePassword(const QString&, const QString&);
-    static const QString getLogbookAPIKey(const QString &internalUsername = QRZBase::CONFIG_USERNAME_API_CONST);
-    static const QStringList getLogbookAPIAddlCallsigns();
-    static void setLogbookAPIAddlCallsigns(const QStringList &list);
-    static void saveLogbookAPIKey(const QString& newKey, const QString &internalUsername = QRZBase::CONFIG_USERNAME_API_CONST);
-
 protected:
     const static QString SECURE_STORAGE_KEY;
     const static QString SECURE_STORAGE_API_KEY;
     const static QString CONFIG_USERNAME_API_CONST;
+
+public:
+    explicit QRZBase() {};
+    virtual ~QRZBase() {};
+
+    DECLARE_SECURE_SERVICE(QRZBase);
+
+    static const QString getUsername();
+    static const QString getPasswd(const QString &username);
+    static void saveUsernamePassword(const QString&, const QString&);
+    static QString getInternalAPIUsername();
+    static const QString getLogbookAPIKey(const QString& username);
+    static const QStringList getLogbookAPIAddlCallsigns();
+    static void setLogbookAPIAddlCallsigns(const QStringList &list);
+    static void saveLogbookAPIKey(const QString& newKey, const QString &username);
 };
 
 class QRZCallbook : public GenericCallbook, private QRZBase

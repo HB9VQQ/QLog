@@ -189,7 +189,7 @@ void AlertTableModel::updateSpotsStatusWhenQSOAdded(const QSqlRecord &record)
         alert.spot.status = Data::dxccNewStatusWhenQSOAdded(alert.spot.status,
                                                             alert.spot.dxcc.dxcc,
                                                             alert.spot.band,
-                                                            ( ( alert.spot.modeGroupString == BandPlan::MODE_GROUP_STRING_FT8 ) ? BandPlan::MODE_GROUP_STRING_DIGITAL
+                                                            ( ( alert.spot.modeGroupString == BandPlan::MODE_GROUP_STRING_FTx ) ? BandPlan::MODE_GROUP_STRING_DIGITAL
                                                                                                                                 : dxccModeGroup ),
                                                             dxcc,
                                                             band,

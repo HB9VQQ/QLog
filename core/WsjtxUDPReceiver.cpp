@@ -137,6 +137,10 @@ float WsjtxUDPReceiver::modePeriodLength(const QString &mode)
     {
         ret = 7.5;
     }
+    else if ( mode == "FT2" )
+    {
+        ret = 3.8;
+    }
     else if ( mode == "JT4"
               || mode == "JT9"
               || mode.contains("JT65")

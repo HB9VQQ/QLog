@@ -5,6 +5,7 @@
 #include <QModelIndex>
 #include <QSqlTableModel>
 #include <QCompleter>
+#include <QTimer>
 #include <hamlib/rig.h>
 #include <QLineEdit>
 #include <QComboBox>
@@ -97,6 +98,8 @@ public slots:
     void rotStackWidgetChanged(int);
     void cwKeyStackWidgetChanged(int);
     void tqslPathBrowse();
+    void tqslAutoDetect();
+    void updateTQSLVersionLabel();
     void stationCallsignChanged();
     void adjustLocatorTextColor();
     void adjustVUCCLocatorTextColor();
@@ -121,6 +124,8 @@ public slots:
     void clublogSettingChanged();
     void updateDateFormatResult();
     void rigFlowControlChanged(int);
+    void showRigctldAdvanced();
+    void rigShareChanged(int);
 
     void qrzAddCallsignAPIKey();
     void qrzDelCallsignAPIKey();
@@ -130,11 +135,13 @@ private:
     void writeSettings();
     void setUIBasedOnRigCaps(const RigCaps&);
     void refreshRigAssignedCWKeyCombo();
+    void updateRigShareEnabled();
     void setValidationResultColor(QLineEdit *);
     QString getMemberListComboValue(const QComboBox *);
     void generateMembershipCheckboxes();
     void generateQRZAPICallsignTable();
     void saveQRZAPICallsignTable();
+    void updateCountyCompleter(int dxcc);
 
     const int CIVADDR_DISABLED_VALUE = -1;
 
@@ -153,12 +160,16 @@ private:
     QCompleter *wwffCompleter;
     MultiselectCompleter *potaCompleter;
     QCompleter *sigCompleter;
+    QCompleter *countyCompleter;
     QList<QCheckBox*> memberListCheckBoxes;
     Ui::SettingsDialog *ui;
     LogLocale locale;
     bool sotaFallback;
     bool potaFallback;
     bool wwffFallback;
+    QString rigctldPath;
+    QString rigctldArgs;
+    QTimer *m_tqslVersionTimer;
 };
 
 #endif // QLOG_UI_SETTINGSDIALOG_H

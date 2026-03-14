@@ -39,6 +39,7 @@ QStringList EQSLUploader::uploadedFields =
 };
 
 const QString EQSLBase::SECURE_STORAGE_KEY = "eQSL";
+REGISTRATION_SECURE_SERVICE(EQSLBase);
 
 const QString EQSLBase::getUsername()
 {
@@ -47,12 +48,11 @@ const QString EQSLBase::getUsername()
     return LogParam::getEQSLLogbookUsername();
 }
 
-const QString EQSLBase::getPassword()
+const QString EQSLBase::getPasswd()
 {
     FCT_IDENTIFICATION;
 
-    return CredentialStore::instance()->getPassword(EQSLBase::SECURE_STORAGE_KEY,
-                                                    getUsername());
+    return getPassword(EQSLBase::SECURE_STORAGE_KEY, getUsername());
 }
 
 
@@ -64,14 +64,24 @@ void EQSLBase::saveUsernamePassword(const QString &newUsername, const QString &n
 
     if ( oldUsername != newUsername )
     {
-        CredentialStore::instance()->deletePassword(EQSLBase::SECURE_STORAGE_KEY,
-                                                    oldUsername);
+        deletePassword(EQSLBase::SECURE_STORAGE_KEY, oldUsername);
     }
     LogParam::setEQSLLogbookUsername(newUsername);
 
-    CredentialStore::instance()->savePassword(EQSLBase::SECURE_STORAGE_KEY,
-                                              newUsername,
-                                              newPassword);
+    savePassword(EQSLBase::SECURE_STORAGE_KEY,
+                 newUsername, newPassword);
+}
+
+void EQSLBase::registerCredentials()
+{
+    // both storage keys belong to the same logical service
+    CredentialRegistry::instance().add(SECURE_STORAGE_KEY, []()
+    {
+        return QList<CredentialDescriptor>
+        {
+            { SECURE_STORAGE_KEY, [](){ return getUsername(); } }
+        };
+    });
 }
 
 EQSLUploader::EQSLUploader( QObject *parent ):
@@ -99,8 +109,7 @@ void EQSLUploader::uploadAdif(const QByteArray &data)
     FCT_IDENTIFICATION;
 
     const QString &username = getUsername();
-    const QString &password = CredentialStore::instance()->getPassword(EQSLUploader::SECURE_STORAGE_KEY,
-                                                                       username);
+    const QString &password = getPassword(EQSLUploader::SECURE_STORAGE_KEY, username);
 
     /* http://www.eqsl.cc/qslcard/ImportADIF.txt */
     QHttpMultiPart *multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType, this);
@@ -336,7 +345,7 @@ void EQSLQSLDownloader::getQSLImage(const QSqlRecord &qso)
     qCDebug(runtime) << "QSL is not in Cache";
 
     const QString &username = getUsername();
-    const QString &password = getPassword();
+    const QString &password = getPasswd();
     const QDateTime &time_start = qso.value("start_time").toDateTime().toTimeZone(QTimeZone::utc());
 
     QUrlQuery query;
@@ -594,7 +603,7 @@ void EQSLQSLDownloader::get(const QList<QPair<QString, QString>> &params)
     FCT_IDENTIFICATION;
 
     const QString &username = getUsername();
-    const QString &password = getPassword();
+    const QString &password = getPasswd();
 
     QUrlQuery query;
     query.setQueryItems(params);

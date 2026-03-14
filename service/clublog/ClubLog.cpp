@@ -18,6 +18,8 @@ MODULE_IDENTIFICATION("qlog.core.clublog");
 const QString ClubLogBase::SECURE_STORAGE_KEY = "Clublog";
 const QString ClubLogBase::API_KEY = "7a45c2b20f932ca8908b975a60f0a78a7602f65a";
 
+REGISTRATION_SECURE_SERVICE(ClubLogBase);
+
 // https://clublog.freshdesk.com/support/solutions/articles/53202-which-adif-fields-does-club-log-use-
 QStringList ClubLogUploader::uploadedFields =
 {
@@ -58,12 +60,11 @@ bool ClubLogBase::isUploadImmediatelyEnabled()
     return LogParam::getClublogUploadImmediatelyEnabled();
 }
 
-const QString ClubLogBase::getPassword()
+const QString ClubLogBase::getPasswd()
 {
     FCT_IDENTIFICATION;
 
-    return CredentialStore::instance()->getPassword(ClubLogBase::SECURE_STORAGE_KEY,
-                                                    getEmail());
+    return getPassword(ClubLogBase::SECURE_STORAGE_KEY, getEmail());
 }
 
 void ClubLogBase::saveUsernamePassword(const QString &newEmail, const QString &newPassword)
@@ -73,13 +74,11 @@ void ClubLogBase::saveUsernamePassword(const QString &newEmail, const QString &n
     const QString &oldEmail = getEmail();
     if ( oldEmail != newEmail )
     {
-        CredentialStore::instance()->deletePassword(ClubLogBase::SECURE_STORAGE_KEY,
-                                                    oldEmail);
+        deletePassword(ClubLogBase::SECURE_STORAGE_KEY, oldEmail);
     }
     LogParam::setClublogLogbookReqEmail(newEmail);
-    CredentialStore::instance()->savePassword(ClubLogBase::SECURE_STORAGE_KEY,
-                                              newEmail,
-                                              newPassword);
+    savePassword(ClubLogBase::SECURE_STORAGE_KEY,
+                 newEmail, newPassword);
 }
 
 void ClubLogBase::saveUploadImmediatelyConfig(bool value)
@@ -89,6 +88,17 @@ void ClubLogBase::saveUploadImmediatelyConfig(bool value)
     LogParam::setClublogUploadImmediatelyEnabled(value);
 }
 
+void ClubLogBase::registerCredentials()
+{
+    // both storage keys belong to the same logical service
+    CredentialRegistry::instance().add(SECURE_STORAGE_KEY, []()
+    {
+        return QList<CredentialDescriptor>
+        {
+            { SECURE_STORAGE_KEY, [](){ return getEmail(); } }
+        };
+    });
+}
 
 ClubLogUploader::ClubLogUploader(QObject *parent) :
     GenericQSOUploader(uploadedFields, parent),
@@ -136,7 +146,7 @@ void ClubLogUploader::sendRealtimeRequest(const OnlineUploadCommand command,
     }
 
     const QString &email = getEmail();
-    const QString &password = getPassword();
+    const QString &password = getPasswd();
 
     if ( email.isEmpty() || uploadCallsign.isEmpty() || password.isEmpty() )
         return;
@@ -217,7 +227,7 @@ void ClubLogUploader::uploadAdif(const QByteArray& data,
     qCDebug(function_parameters) << data;
 
     const QString &email = getEmail();
-    const QString &password = getPassword();
+    const QString &password = getPasswd();
 
     if ( email.isEmpty() || uploadCallsign.isEmpty() || password.isEmpty() )
         return;

@@ -928,6 +928,9 @@ void LogbookWidget::deleteContact()
     QSet<uint> removedEntities;
     removedEntities.reserve(deletedRowIndexes.size());
 
+    QSqlDatabase db = QSqlDatabase::database();
+    db.transaction();
+
     for ( const QModelIndex &index : static_cast<const QModelIndexList&>(deletedRowIndexes) )
     {
         cnt++;
@@ -940,6 +943,8 @@ void LogbookWidget::deleteContact()
         if ( cnt % 50 == 0 )
             progress->setValue(cnt);
     }
+
+    db.commit();
 
     progress->setValue(deletedRowIndexes.size());
     progress->done(QDialog::Accepted);

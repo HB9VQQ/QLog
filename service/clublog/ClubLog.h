@@ -7,25 +7,29 @@
 #include <QHash>
 #include <QRegularExpression>
 #include "service/GenericQSOUploader.h"
+#include "core/CredentialStore.h"
 
 class QNetworkReply;
 class QNetworkAccessManager;
 
-class ClubLogBase
+class ClubLogBase : public SecureServiceBase<ClubLogBase>
 {
+protected:
+    const static QString SECURE_STORAGE_KEY;
+    const static QString API_KEY ;
+
 public:
     explicit ClubLogBase() {};
     virtual ~ClubLogBase() {} ;
 
+    DECLARE_SECURE_SERVICE(ClubLogBase);
+
     static const QString getEmail();
     static bool isUploadImmediatelyEnabled();
-    static const QString getPassword();
+    static const QString getPasswd();
     static void saveUsernamePassword(const QString &, const QString &);
     static void saveUploadImmediatelyConfig(bool value);
     static const QString getCTYUrl()  {return QString("https://cdn.clublog.org/cty.php?api=%1").arg(API_KEY);};
-protected:
-    const static QString SECURE_STORAGE_KEY;
-    const static QString API_KEY ;
 };
 
 class ClubLogUploader : public GenericQSOUploader, private ClubLogBase

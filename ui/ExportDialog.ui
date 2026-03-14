@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>465</width>
-    <height>546</height>
+    <height>606</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -278,7 +278,7 @@
         </item>
        </layout>
       </item>
-      <item row="1" column="0">
+      <item row="2" column="0">
        <widget class="QCheckBox" name="myCallsignCheckBox">
         <property name="toolTip">
          <string>Export only QSOs that match the selected My Callsign</string>
@@ -288,7 +288,7 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
+      <item row="2" column="1">
        <widget class="QComboBox" name="myCallsignComboBox">
         <property name="enabled">
          <bool>false</bool>
@@ -298,7 +298,7 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
+      <item row="3" column="0">
        <widget class="QCheckBox" name="myGridCheckBox">
         <property name="toolTip">
          <string>Export only QSOs that match the selected My Gridsquare</string>
@@ -308,7 +308,7 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
+      <item row="3" column="1">
        <widget class="QComboBox" name="myGridComboBox">
         <property name="enabled">
          <bool>false</bool>
@@ -318,7 +318,7 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="0">
+      <item row="5" column="0">
        <widget class="QCheckBox" name="qslSendViaCheckbox">
         <property name="toolTip">
          <string>Export only QSOs that match the selected QSL Send Via value</string>
@@ -328,7 +328,7 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="1">
+      <item row="5" column="1">
        <widget class="QComboBox" name="qslSendViaComboBox">
         <property name="enabled">
          <bool>false</bool>
@@ -338,7 +338,7 @@
         </property>
        </widget>
       </item>
-      <item row="5" column="0">
+      <item row="6" column="0">
        <widget class="QCheckBox" name="addlSentStatusCheckbox">
         <property name="toolTip">
          <string>Include unusual QSO Sent statuses</string>
@@ -348,7 +348,7 @@
         </property>
        </widget>
       </item>
-      <item row="5" column="1">
+      <item row="6" column="1">
        <layout class="QHBoxLayout" name="sentStatusLayout">
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -448,20 +448,34 @@
         </item>
        </layout>
       </item>
-      <item row="3" column="0">
+      <item row="4" column="0">
        <widget class="QCheckBox" name="userFilterCheckBox">
         <property name="text">
          <string>User Filter</string>
         </property>
        </widget>
       </item>
-      <item row="3" column="1">
+      <item row="4" column="1">
        <widget class="QComboBox" name="userFilterComboBox">
         <property name="enabled">
          <bool>false</bool>
         </property>
         <property name="toolTip">
          <string>Export QSOs that match the selected user QSO Filter</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="myStationProfileCheckbox">
+        <property name="text">
+         <string>Station Profile</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="myStationProfileComboBox">
+        <property name="enabled">
+         <bool>false</bool>
         </property>
        </widget>
       </item>
@@ -495,6 +509,8 @@
   <tabstop>exportedColumnsButton</tabstop>
   <tabstop>markAsSentCheckbox</tabstop>
   <tabstop>dateRangeCheckBox</tabstop>
+  <tabstop>myStationProfileCheckbox</tabstop>
+  <tabstop>myStationProfileComboBox</tabstop>
   <tabstop>myCallsignCheckBox</tabstop>
   <tabstop>myCallsignComboBox</tabstop>
   <tabstop>myGridCheckBox</tabstop>
@@ -734,6 +750,38 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>myStationProfileCheckbox</sender>
+   <signal>stateChanged(int)</signal>
+   <receiver>ExportDialog</receiver>
+   <slot>toggleStationProfile()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>85</x>
+     <y>300</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>232</x>
+     <y>302</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>myStationProfileComboBox</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>ExportDialog</receiver>
+   <slot>onStationProfileChange()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>316</x>
+     <y>301</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>232</x>
+     <y>302</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>toggleDateRange()</slot>
@@ -749,5 +797,7 @@
   <slot>exportedColumnsComboChanged(int)</slot>
   <slot>toggleSentStatus()</slot>
   <slot>toggleUserFilter()</slot>
+  <slot>toggleStationProfile()</slot>
+  <slot>onStationProfileChange()</slot>
  </slots>
 </ui>

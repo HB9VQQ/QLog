@@ -579,7 +579,7 @@ void AlertEvaluatorTest::match_wsjtx_data()
     // mode
     {
         RuleSpec rule;
-        rule.mode = "|FT8";
+        rule.mode = "|FTx";
 
         WsjtxSpec in;
         QTest::newRow(QString("wsjtx_mode_%1_%2").arg(rule.mode,
@@ -590,7 +590,40 @@ void AlertEvaluatorTest::match_wsjtx_data()
 
     {
         RuleSpec rule;
-        rule.mode = "|FT8";
+        rule.mode = "|FTx";
+
+        WsjtxSpec in;
+        in.decodedMode = "FT4";
+        QTest::newRow(QString("wsjtx_mode_%1_%2").arg(rule.mode,
+                                                          in.decodedMode).toUtf8().constData()
+                      ) << rule << in << true;
+    }
+
+    {
+        RuleSpec rule;
+        rule.mode = "|FTx";
+
+        WsjtxSpec in;
+        in.decodedMode = "FT2";
+        QTest::newRow(QString("wsjtx_mode_%1_%2").arg(rule.mode,
+                                                          in.decodedMode).toUtf8().constData()
+                      ) << rule << in << true;
+    }
+
+    {
+        RuleSpec rule;
+        rule.mode = "|DIGITAL";
+
+        WsjtxSpec in;
+        in.decodedMode = "FT8";
+        QTest::newRow(QString("wsjtx_mode_%1_%2").arg(rule.mode,
+                                                          in.decodedMode).toUtf8().constData()
+                      ) << rule << in << false;
+    }
+
+    {
+        RuleSpec rule;
+        rule.mode = "|DIGITAL";
 
         WsjtxSpec in;
         in.decodedMode = "FT4";
@@ -604,7 +637,7 @@ void AlertEvaluatorTest::match_wsjtx_data()
         rule.mode = "|DIGITAL";
 
         WsjtxSpec in;
-        in.decodedMode = "FT8";
+        in.decodedMode = "FT2";
         QTest::newRow(QString("wsjtx_mode_%1_%2").arg(rule.mode,
                                                           in.decodedMode).toUtf8().constData()
                       ) << rule << in << false;
@@ -1069,10 +1102,10 @@ void AlertEvaluatorTest::match_dxspot_data()
     // mode
     {
         RuleSpec rule;
-        rule.mode = "|FT8";
+        rule.mode = "|FTx";
 
         DxSpotSpec in;
-        in.modeGroupString = "FT8";
+        in.modeGroupString = "FTx";
         QTest::newRow(QString("dxspot_mode_%1_%2").arg(rule.mode,
                                                           in.modeGroupString).toUtf8().constData()
                       ) << rule << in << true;
@@ -1080,14 +1113,23 @@ void AlertEvaluatorTest::match_dxspot_data()
     }
 
     {
+        // FT4 spot: at a FT4 frequency the band plan assigns modeGroupString "FTx"
         RuleSpec rule;
-        rule.mode = "|FT8";
+        rule.mode = "|FTx";
 
         DxSpotSpec in;
-        in.modeGroupString = "FT4";
-        QTest::newRow(QString("dxspot_mode_%1_%2").arg(rule.mode,
-                                                          in.modeGroupString).toUtf8().constData()
-                      ) << rule << in << false;
+        in.modeGroupString = "FTx";
+        QTest::newRow("dxspot_mode_|FTx_FT4") << rule << in << true;
+    }
+
+    {
+        // FT2 spot: at a FT2 frequency the band plan assigns modeGroupString "FTx"
+        RuleSpec rule;
+        rule.mode = "|FTx";
+
+        DxSpotSpec in;
+        in.modeGroupString = "FTx";
+        QTest::newRow("dxspot_mode_|FTx_FT2") << rule << in << true;
     }
 
     {
@@ -1095,10 +1137,30 @@ void AlertEvaluatorTest::match_dxspot_data()
         rule.mode = "|DIGITAL";
 
         DxSpotSpec in;
-        in.modeGroupString = "FT8";
+        in.modeGroupString = "FTx";
         QTest::newRow(QString("dxspot_mode_%1_%2").arg(rule.mode,
                                                           in.modeGroupString).toUtf8().constData()
                       ) << rule << in << false;
+    }
+
+    {
+        // FT4 spot (modeGroupString "FTx") does not match DIGITAL filter
+        RuleSpec rule;
+        rule.mode = "|DIGITAL";
+
+        DxSpotSpec in;
+        in.modeGroupString = "FTx";
+        QTest::newRow("dxspot_mode_|DIGITAL_FT4") << rule << in << false;
+    }
+
+    {
+        // FT2 spot (modeGroupString "FTx") does not match DIGITAL filter
+        RuleSpec rule;
+        rule.mode = "|DIGITAL";
+
+        DxSpotSpec in;
+        in.modeGroupString = "FTx";
+        QTest::newRow("dxspot_mode_|DIGITAL_FT2") << rule << in << false;
     }
 
     {

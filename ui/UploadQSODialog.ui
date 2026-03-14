@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>597</width>
-    <height>725</height>
+    <height>819</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -458,6 +458,50 @@
     </widget>
    </item>
    <item>
+    <widget class="QGroupBox" name="lotwGroup">
+     <property name="title">
+      <string>LoTW / TQSL</string>
+     </property>
+     <layout class="QFormLayout" name="lotwFormLayout">
+      <property name="leftMargin">
+       <number>4</number>
+      </property>
+      <property name="topMargin">
+       <number>4</number>
+      </property>
+      <property name="rightMargin">
+       <number>4</number>
+      </property>
+      <property name="bottomMargin">
+       <number>4</number>
+      </property>
+      <item row="0" column="0">
+       <widget class="QLabel" name="lotwLocationLabel">
+        <property name="text">
+         <string>TQSL Station Location</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="lotwLocationCombo"/>
+      </item>
+      <item row="1" column="0" colspan="2">
+       <widget class="QLabel" name="lotwLocationWarningLabel">
+        <property name="visible">
+         <bool>false</bool>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">color: orange;</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <widget class="QGroupBox" name="wavelogGroup">
      <property name="title">
       <string>Wavelog</string>
@@ -637,6 +681,7 @@
   <tabstop>eqslQSLMessage</tabstop>
   <tabstop>eqslQSLComment</tabstop>
   <tabstop>clublogClearCheckbox</tabstop>
+  <tabstop>lotwLocationCombo</tabstop>
   <tabstop>wavelogStationIDSpin</tabstop>
   <tabstop>wavelogReuploadCheckbox</tabstop>
   <tabstop>showQSOButton</tabstop>
@@ -916,6 +961,22 @@
    </hints>
   </connection>
   <connection>
+   <sender>lotwCheckbox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>UploadQSODialog</receiver>
+   <slot>setLotwSettingVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>224</x>
+     <y>44</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>285</x>
+     <y>259</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
    <sender>wavelogCheckbox</sender>
    <signal>toggled(bool)</signal>
    <receiver>UploadQSODialog</receiver>
@@ -972,6 +1033,7 @@
   <slot>handleCallsignChange(QString)</slot>
   <slot>startUploadQueue()</slot>
   <slot>setWavelogSettingVisible(bool)</slot>
+  <slot>setLotwSettingVisible(bool)</slot>
   <slot>updateWavelogStationLabel()</slot>
  </slots>
  <buttongroups>

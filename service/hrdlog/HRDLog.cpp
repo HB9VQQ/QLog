@@ -15,6 +15,7 @@
 MODULE_IDENTIFICATION("qlog.core.hrdlog");
 
 const QString HRDLogBase::SECURE_STORAGE_KEY = "HRDLog";
+REGISTRATION_SECURE_SERVICE(HRDLogBase);
 
 // http://www.iw1qlh.net/projects/hrdlog/HRDLognet_4.pdf
 
@@ -61,8 +62,8 @@ const QString HRDLogBase::getUploadCode()
 {
     FCT_IDENTIFICATION;
 
-    return CredentialStore::instance()->getPassword(HRDLogBase::SECURE_STORAGE_KEY,
-                                                    getRegisteredCallsign());
+    return getPassword(HRDLogBase::SECURE_STORAGE_KEY,
+                       getRegisteredCallsign());
 }
 
 void HRDLogBase::saveUploadCode(const QString &newUsername, const QString &newPassword)
@@ -72,15 +73,14 @@ void HRDLogBase::saveUploadCode(const QString &newUsername, const QString &newPa
     QString oldUsername = getRegisteredCallsign();
     if ( oldUsername != newUsername )
     {
-        CredentialStore::instance()->deletePassword(HRDLogBase::SECURE_STORAGE_KEY,
-                                                    oldUsername);
+        deletePassword(HRDLogBase::SECURE_STORAGE_KEY,
+                       oldUsername);
     }
 
     LogParam::setHRDLogLogbookReqCallsign(newUsername);
 
-    CredentialStore::instance()->savePassword(HRDLogBase::SECURE_STORAGE_KEY,
-                                              newUsername,
-                                              newPassword);
+    savePassword(HRDLogBase::SECURE_STORAGE_KEY,
+                 newUsername, newPassword);
 }
 
 bool HRDLogBase::getOnAirEnabled()
@@ -95,6 +95,18 @@ void HRDLogBase::saveOnAirEnabled(bool state)
     FCT_IDENTIFICATION;
 
     LogParam::setHRDLogOnAir(state);
+}
+
+void HRDLogBase::registerCredentials()
+{
+    // both storage keys belong to the same logical service
+    CredentialRegistry::instance().add(SECURE_STORAGE_KEY, []()
+    {
+        return QList<CredentialDescriptor>
+        {
+            { SECURE_STORAGE_KEY, [](){ return getRegisteredCallsign(); } }
+        };
+    });
 }
 
 // http://www.iw1qlh.net/projects/hrdlog/HRDLognet_4.pdf

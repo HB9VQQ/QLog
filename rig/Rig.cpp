@@ -1,4 +1,5 @@
 #include "Rig.h"
+#include "RigctldManager.h"
 #include "core/debug.h"
 #include "rig/drivers/HamlibRigDrv.h"
 #ifdef Q_OS_WIN
@@ -13,6 +14,8 @@ MODULE_IDENTIFICATION("qlog.rig.rig");
 #define MUTEXLOCKER     qCDebug(runtime) << "Waiting for Rig mutex"; \
                         QMutexLocker locker(&rigLock); \
                         qCDebug(runtime) << "Using Rig"
+
+int Rig::DEFAULT_MODEL = HamlibRigDrv::DUMMY_MODEL;
 
 Rig::Rig(QObject *parent)
     : QObject{parent},
@@ -197,6 +200,34 @@ void Rig::__openRig()
 
     qCDebug(runtime) << "Opening profile name: " << newRigProfile.profileName;
 
+    // If rig sharing is enabled, start rigctld and modify profile to connect via network
+    if ( newRigProfile.shareRigctld
+         && newRigProfile.driver == HAMLIB_DRIVER
+         && newRigProfile.getPortType() == RigProfile::SERIAL_ATTACHED)
+    {
+        qCDebug(runtime) << "Starting rigctld for rig sharing";
+
+        if ( !rigctldManager )
+        {
+            rigctldManager = new RigctldManager(this);
+            connect(rigctldManager, &RigctldManager::errorOccurred, this, [this](const QString &error)
+            {
+                emit rigErrorPresent(tr("Rigctld Error"), error);
+            });
+        }
+
+        if ( !rigctldManager->start(newRigProfile) )
+            return;
+
+        // Modify profile to connect via network to rigctld
+        newRigProfile.hostname = rigctldManager->getConnectHost();
+        newRigProfile.netport = rigctldManager->getConnectPort();
+        newRigProfile.portPath.clear();  // Clear serial port to force network connection
+        newRigProfile.model = HamlibRigDrv::RIGCTLD_MODEL;
+
+        qCDebug(runtime) << "Connecting to rigctld at" << newRigProfile.hostname << ":" << newRigProfile.netport;
+    }
+
     rigDriver = getDriver(newRigProfile);
 
     if ( !rigDriver )
@@ -347,6 +378,16 @@ void Rig::__closeRig()
     delete rigDriver;
     rigDriver = nullptr;
     connected = false;
+
+    // Stop and cleanup rigctld if it was running
+    if ( rigctldManager )
+    {
+        qCDebug(runtime) << "Stopping rigctld";
+        rigctldManager->stop();
+        delete rigctldManager;
+        rigctldManager = nullptr;
+    }
+
     emit rigDisconnected();
 }
 

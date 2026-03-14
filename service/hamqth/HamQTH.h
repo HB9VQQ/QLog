@@ -4,22 +4,25 @@
 #include <QObject>
 #include <QString>
 #include "service/GenericCallbook.h"
+#include "core/CredentialStore.h"
 
 class QNetworkAccessManager;
 class QNetworkReply;
 
-class HamQTHBase
+class HamQTHBase : public SecureServiceBase<HamQTHBase>
 {
+protected:
+    const static QString SECURE_STORAGE_KEY;
+
 public:
     explicit HamQTHBase() {};
     virtual ~HamQTHBase() {};
 
-    static const QString getUsername();
-    static const QString getPassword();
-    static void saveUsernamePassword(const QString&, const QString&);
+    DECLARE_SECURE_SERVICE(HamQTHBase);
 
-protected:
-    const static QString SECURE_STORAGE_KEY;
+    static const QString getUsername();
+    static const QString getPasswd();
+    static void saveUsernamePassword(const QString&, const QString&);
 };
 
 class HamQTHCallbook : public GenericCallbook, private HamQTHBase

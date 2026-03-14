@@ -31,6 +31,10 @@ private slots:
     void bandsList_onlyDXCC();
     void modeToDXCCModeGroup_data();
     void modeToDXCCModeGroup();
+    void isFTxMode_data();
+    void isFTxMode();
+    void isFTxBandMode_data();
+    void isFTxBandMode();
 };
 
 void BandPlanTest::initTestCase()
@@ -110,6 +114,8 @@ void BandPlanTest::initTestCase()
         {"CW", "CW"},
         {"SSB", "PHONE"},
         {"FT8", "DIGITAL"},
+        {"FT4", "DIGITAL"},
+        {"FT2", "DIGITAL"},
         {"RTTY", "DIGITAL"}
     };
 
@@ -168,7 +174,7 @@ void BandPlanTest::freq2BandModeGroupString_data()
 
     QTest::newRow("cw") << 14.0 << QStringLiteral("CW");
     QTest::newRow("digital") << 14.071 << QStringLiteral("DIGITAL");
-    QTest::newRow("ft8") << 14.074 << QStringLiteral("FT8");
+    QTest::newRow("ft8") << 14.074 << QStringLiteral("FTx");
     QTest::newRow("phone") << 14.200 << QStringLiteral("PHONE");
     QTest::newRow("out_of_band") << 1.0 << QStringLiteral("PHONE");
     QTest::newRow("negative") << -1.0 << QStringLiteral("PHONE");
@@ -191,6 +197,7 @@ void BandPlanTest::freq2ExpectedMode_data()
     QTest::newRow("cw") << 14.0 << QStringLiteral("CW") << QString();
     QTest::newRow("digital_usb") << 14.071 << QStringLiteral("SSB") << QStringLiteral("USB");
     QTest::newRow("ft8") << 14.074 << QStringLiteral("FT8") << QString();
+    QTest::newRow("ft4") << 14.081 << QStringLiteral("MFSK") << QStringLiteral("FT4");
     QTest::newRow("usb_voice") << 14.200 << QStringLiteral("SSB") << QStringLiteral("USB");
 }
 
@@ -287,6 +294,8 @@ void BandPlanTest::modeToDXCCModeGroup_data()
     QTest::newRow("ssb") << QStringLiteral("SSB") << QStringLiteral("PHONE");
     QTest::newRow("cw") << QStringLiteral("CW") << QStringLiteral("CW");
     QTest::newRow("ft8") << QStringLiteral("FT8") << QStringLiteral("DIGITAL");
+    QTest::newRow("ft4") << QStringLiteral("FT4") << QStringLiteral("DIGITAL");
+    QTest::newRow("ft2") << QStringLiteral("FT2") << QStringLiteral("DIGITAL");
     QTest::newRow("rtty") << QStringLiteral("RTTY") << QStringLiteral("DIGITAL");
 }
 
@@ -296,6 +305,48 @@ void BandPlanTest::modeToDXCCModeGroup()
     QFETCH(QString, expectedGroup);
 
     QCOMPARE(BandPlan::modeToDXCCModeGroup(mode), expectedGroup);
+}
+
+void BandPlanTest::isFTxMode_data()
+{
+    QTest::addColumn<QString>("mode");
+    QTest::addColumn<bool>("expected");
+
+    QTest::newRow("ft8")  << QStringLiteral("FT8")  << true;
+    QTest::newRow("ft4")  << QStringLiteral("FT4")  << true;
+    QTest::newRow("ft2")  << QStringLiteral("FT2")  << true;
+    QTest::newRow("cw")   << QStringLiteral("CW")   << false;
+    QTest::newRow("rtty") << QStringLiteral("RTTY") << false;
+    QTest::newRow("ft")   << QStringLiteral("FT")   << false;
+}
+
+void BandPlanTest::isFTxMode()
+{
+    QFETCH(QString, mode);
+    QFETCH(bool, expected);
+
+    QCOMPARE(BandPlan::isFTxMode(mode), expected);
+}
+
+void BandPlanTest::isFTxBandMode_data()
+{
+    QTest::addColumn<BandPlan::BandPlanMode>("mode");
+    QTest::addColumn<bool>("expected");
+
+    QTest::newRow("ft8")     << BandPlan::BAND_MODE_FT8     << true;
+    QTest::newRow("ft4")     << BandPlan::BAND_MODE_FT4     << true;
+    QTest::newRow("ft2")     << BandPlan::BAND_MODE_FT2     << true;
+    QTest::newRow("cw")      << BandPlan::BAND_MODE_CW      << false;
+    QTest::newRow("digital") << BandPlan::BAND_MODE_DIGITAL << false;
+    QTest::newRow("phone")   << BandPlan::BAND_MODE_PHONE   << false;
+}
+
+void BandPlanTest::isFTxBandMode()
+{
+    QFETCH(BandPlan::BandPlanMode, mode);
+    QFETCH(bool, expected);
+
+    QCOMPARE(BandPlan::isFTxBandMode(mode), expected);
 }
 
 QTEST_MAIN(BandPlanTest)

@@ -7,22 +7,25 @@
 #include "core/QSLStorage.h"
 #include "service/GenericQSOUploader.h"
 #include "service/GenericQSLDownloader.h"
+#include "core/CredentialStore.h"
 
 class QNetworkAccessManager;
 class QNetworkReply;
 
-class EQSLBase
+class EQSLBase : public SecureServiceBase<EQSLBase>
 {
+protected:
+    static const QString SECURE_STORAGE_KEY;
+
 public:
     explicit EQSLBase() {};
     virtual ~EQSLBase() {};
 
-    static const QString getUsername();
-    static const QString getPassword();
-    static void saveUsernamePassword(const QString&, const QString&);
+    DECLARE_SECURE_SERVICE(EQSLBase);
 
-protected:
-    static const QString SECURE_STORAGE_KEY;
+    static const QString getUsername();
+    static const QString getPasswd();
+    static void saveUsernamePassword(const QString&, const QString&);
 };
 
 class EQSLUploader : public GenericQSOUploader, private EQSLBase

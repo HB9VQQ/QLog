@@ -28,8 +28,8 @@ public:
         + "ITUZ" + QString::number(dxcc.ituz) + " "
         + "Status: " + QString::number(status) + " "
         + "Band: " + band + " "
-        + "ModeGroup: " + ((decodedMode == "FT8") ? BandPlan::MODE_GROUP_STRING_FT8
-                                                  : BandPlan::MODE_GROUP_STRING_DIGITAL )  + " "
+        + "ModeGroup: " + (BandPlan::isFTxMode(decodedMode) ? BandPlan::MODE_GROUP_STRING_FTx
+                                                             : BandPlan::MODE_GROUP_STRING_DIGITAL )  + " "
         + "spotter Country: " + QString::number(dxcc_spotter.dxcc)  + " "
         + "Continent: " + dxcc.cont  + " "
         + "Spotter Continent: " + dxcc_spotter.cont  + " "

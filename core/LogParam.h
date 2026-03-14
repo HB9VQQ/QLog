@@ -73,6 +73,8 @@ public:
     static int getBandmapAging(const QString& widgetID);
     static bool setBandmapCenterRX(const QString& widgetID, bool centerRX);
     static bool getBandmapCenterRX(const QString& widgetID);
+    static bool setBandmapShowEmergency(const QString& widgetID, bool show);
+    static bool getBandmapShowEmergency(const QString& widgetID);
 
     /*******************
      * UploadQSO Dialog
@@ -89,6 +91,8 @@ public:
     static void setUploadServiceState(const QString& name, bool state);
     static int getUploadQSOFilterType();
     static void setUploadQSOFilterType(int filterID);
+    static QString getUploadLoTWLocation();
+    static void setUploadLoTWLocation(const QString &location);
 
     /*********************
      * DownloadQSL Dialog
@@ -161,6 +165,7 @@ public:
     static void setLoTWCallbookUsername(const QString& username);
     static QString getLoTWTQSLPath(const QString &defaultPath);
     static void setLoTWTQSLPath(const QString& path);
+    static bool isLoTWTQSLPathKey(const QString &key);
 
     /*******************
      * Callbook setting
@@ -351,6 +356,16 @@ public:
     static void setLogbookFilterUserFilter(const QString &name);
     static QString getLogbookFilterClub();
     static void setLogbookFilterClub(const QString &name);
+
+    /************************
+     * Encrypted Passwords
+     ************************/
+    static QByteArray getEncryptedPasswords();
+    static void setEncryptedPasswords(const QByteArray &data);
+    static void removeEncryptedPasswords();
+    static QString getSourcePlatform();
+    static void setSourcePlatform(const QString &platform);
+    static void removeSourcePlatform();
 
     /**************
      * Main Window

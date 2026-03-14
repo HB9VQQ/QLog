@@ -286,7 +286,7 @@ void TCIRigDrv::sendDXSpot(const DxSpot &spot)
 
     QStringList args = {
         spot.callsign,
-        mode2RawMode(mode, submode, (spot.bandPlanMode == BandPlan::BAND_MODE_FT8 || spot.bandPlanMode == BandPlan::BAND_MODE_DIGITAL)),
+        mode2RawMode(mode, submode, (BandPlan::isFTxBandMode(spot.bandPlanMode) || spot.bandPlanMode == BandPlan::BAND_MODE_DIGITAL)),
         QString::number(internalFreq),
         QString::number(spotColor.rgba()),
         spot.callsign
@@ -508,6 +508,20 @@ const QString TCIRigDrv::mode2RawMode(const QString &mode, const QString &submod
     {
         if ( modeList.contains("FT8") )
             return "FT8";
+
+        if ( modeList.contains("DIGU") )
+            return "DIGU";
+
+        return "USB";
+    }
+
+    if ( mode == "MFSK" )
+    {
+        if ( submode == "FT4" && modeList.contains("FT4"))
+            return "FT4";
+
+        if ( submode == "FT2" && modeList.contains("FT2"))
+            return "FT2";
 
         if ( modeList.contains("DIGU") )
             return "DIGU";

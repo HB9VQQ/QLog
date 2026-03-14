@@ -5,6 +5,8 @@
 #include <QTextDocument>
 #include <QScrollBar>
 #include <QGraphicsSceneMouseEvent>
+#include <QLinearGradient>
+#include <QPainterPath>
 #include <algorithm>
 #include <QWheelEvent>
 
@@ -15,6 +17,7 @@
 #include "core/debug.h"
 #include "rig/macros.h"
 #include "core/LogParam.h"
+#include "core/EmergencyFrequency.h"
 
 MODULE_IDENTIFICATION("qlog.ui.bandmapwidget");
 
@@ -37,6 +40,7 @@ BandmapWidget::BandmapWidget(const QString &widgetID,
     rxMark(nullptr),
     txMark(nullptr),
     keepRXCenter(true),
+    showEmergencyMarkers(true),
     pendingSpots(0),
     lastStationUpdate(0),
     bandmapAnimation(true),
@@ -56,6 +60,7 @@ BandmapWidget::BandmapWidget(const QString &widgetID,
     const QString &submode = LogParam::getNewContactSubMode();
 
     keepRXCenter = LogParam::getBandmapCenterRX(objectName());
+    showEmergencyMarkers = LogParam::getBandmapShowEmergency(objectName());
 
     if ( isNonVfo )
     {
@@ -167,6 +172,11 @@ void BandmapWidget::update()
     /* Draw TX and RX Marks */
     /************************/
     drawTXRXMarks(step);
+
+    /*****************************/
+    /* Draw Emergency Freq Marks */
+    /*****************************/
+    drawEmergencyMarkers(step);
 
     /*****************
      * Draw Stations *
@@ -723,7 +733,7 @@ void BandmapWidget::updateSpotsStatusWhenQSOAdded(const QSqlRecord &record)
         spot.status = Data::dxccNewStatusWhenQSOAdded(spot.status,
                                                       spot.dxcc.dxcc,
                                                       spot.band,
-                                                      ( ( spot.modeGroupString == BandPlan::MODE_GROUP_STRING_FT8 )
+                                                      ( ( spot.modeGroupString == BandPlan::MODE_GROUP_STRING_FTx )
                                                            ? BandPlan::MODE_GROUP_STRING_DIGITAL
                                                            : dxccModeGroup ),
                                                       dxcc,
@@ -960,8 +970,14 @@ void BandmapWidget::showContextMenu(const QPoint &point)
     centerRXAction->setChecked(keepRXCenter);
     connect(centerRXAction, &QAction::triggered, this, &BandmapWidget::centerRXActionChecked);
 
+    QAction* emergencyAction = new QAction(tr("Show Emergency Frequencies"), &contextMenu);
+    emergencyAction->setCheckable(true);
+    emergencyAction->setChecked(showEmergencyMarkers);
+    connect(emergencyAction, &QAction::triggered, this, &BandmapWidget::emergencyMarkersActionChecked);
+
     contextMenu.addMenu(&bandsMenu);
     contextMenu.addAction(centerRXAction);
+    contextMenu.addAction(emergencyAction);
 
     contextMenu.exec(ui->graphicsView->mapToGlobal(point));
 }
@@ -1028,6 +1044,64 @@ void BandmapWidget::updateTunedFrequency(VFOID, double vfoFreq, double ritFreq, 
         clearFreqMark(&txMark);
         clearFreqMark(&rxMark);
     }
+}
+
+void BandmapWidget::drawEmergencyMarkers(double step)
+{
+    FCT_IDENTIFICATION;
+
+    if ( !showEmergencyMarkers )
+        return;
+
+    QFont emergencyFont;
+    emergencyFont.setPointSize(7);
+    emergencyFont.setBold(true);
+
+    const QColor lineColor(220, 40, 40);
+    const QColor pillColor(185, 28, 28);
+    const qreal pillX = 157.0;
+    const qreal pillH = 14.0;
+    const qreal tolerancePx = (EmergencyFrequency::TOLERANCE_MHZ / step) * PIXELSPERSTEP;
+    const qreal glowH = qMin(tolerancePx, 15.0);
+
+    const EmergencyFreqEntry *entry = EmergencyFrequency::inBand(currentBand.start,
+                                                                 currentBand.end);
+
+    if ( !entry ) return;
+
+    const qreal y = ((entry->frequency - currentBand.start) / step) * PIXELSPERSTEP;
+
+    // Gradient glow — height proportional to zoom, fades to transparent at edges
+    QLinearGradient glow(0.0, y - glowH, 0.0, y + glowH);
+    glow.setColorAt(0.0,  QColor(220, 30, 30,   0));
+    glow.setColorAt(0.35, QColor(220, 30, 30,  70));
+    glow.setColorAt(0.5,  QColor(220, 30, 30, 115));
+    glow.setColorAt(0.65, QColor(220, 30, 30,  70));
+    glow.setColorAt(1.0,  QColor(220, 30, 30,   0));
+    bandmapScene->addRect(0, y - glowH, pillX, 2.0 * glowH,
+                          QPen(Qt::NoPen), QBrush(glow));
+
+    // Sharp centre line — runs from the scale up to the SOS pill
+    bandmapScene->addLine(0, y, pillX, y, QPen(lineColor, 2));
+
+    // Pill label — sized dynamically around the text
+    QGraphicsSimpleTextItem *textItem = bandmapScene->addSimpleText(tr("SOS"), emergencyFont);
+    textItem->setBrush(QBrush(Qt::white));
+    const QRectF textRect = textItem->boundingRect();
+    const qreal pillW = textRect.width() + 10.0;
+    const qreal pillY = y - pillH / 2.0;
+
+    QPainterPath pillPath;
+    pillPath.addRoundedRect(QRectF(pillX, pillY, pillW, pillH), 4, 4);
+    QGraphicsPathItem *pillItem = bandmapScene->addPath(pillPath,
+                                                        QPen(Qt::NoPen),
+                                                        QBrush(pillColor));
+
+    textItem->setPos(pillX + (pillW - textRect.width()) / 2.0,
+                     pillY + (pillH - textRect.height()) / 2.0);
+
+    pillItem->setZValue(1);
+    textItem->setZValue(2);
 }
 
 void BandmapWidget::drawMarkers(double frequency)
@@ -1226,6 +1300,16 @@ void BandmapWidget::centerRXActionChecked(bool state)
     if ( keepRXCenter )
         scrollToFreq(rx_freq);
 }
+
+void BandmapWidget::emergencyMarkersActionChecked(bool state)
+{
+    FCT_IDENTIFICATION;
+
+    showEmergencyMarkers = state;
+    LogParam::setBandmapShowEmergency(objectName(), showEmergencyMarkers);
+    update();
+}
+
 
 void GraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent *evt)
 {

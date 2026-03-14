@@ -9,8 +9,6 @@
 
 #include "data/ProfileManager.h"
 
-#define DEFAULT_HAMLIB_RIG_MODEL 1
-
 class RigProfile
 {
 public:
@@ -22,7 +20,7 @@ public:
     };
 
     RigProfile() {
-                   model = DEFAULT_HAMLIB_RIG_MODEL; netport = 0; baudrate = 0;
+                   model = 1; netport = 0; baudrate = 0;
                    databits = 0; stopbits = 0.0; pollInterval = 0;
                    txFreqStart = 0.0; txFreqEnd = 0.0; getFreqInfo = false;
                    getModeInfo = false; getVFOInfo = false; getPWRInfo = false;
@@ -30,42 +28,50 @@ public:
                    getXITInfo = true; defaultPWR = 0.0, getPTTInfo = false;
                    QSYWiping = false, getKeySpeed = false, keySpeedSync = false;
                    driver = 0, dxSpot2Rig = false, civAddr = -1;
+                   shareRigctld = false; rigctldPort = 4532;
                  };
 
     QString profileName;
-    qint32 model;
     QString portPath;
     QString hostname;
-    quint16 netport;
-    quint32 baudrate;
-    quint8 databits;
-    float stopbits;
     QString flowcontrol;
     QString parity;
-    quint32 pollInterval;
     double ritOffset;
     double xitOffset;
+    double defaultPWR;
+    QString assignedCWKey;
+    QString pttType;
+    QString pttPortPath;
+    QString rts;
+    QString dtr;
+    QString rigctldPath;  // empty = autodetect
+    QString rigctldArgs;  // additional arguments
+
+    qint32 model;
+    quint32 baudrate;
+    float stopbits;
+    quint32 pollInterval;
     float txFreqStart;
     float txFreqEnd;
+    qint32 driver;
+
+    quint16 netport;
+    qint16 civAddr; // -1 = AUTO; otherwise address
+    quint16 rigctldPort;
+
+    quint8 databits;
     bool getFreqInfo;
     bool getModeInfo;
     bool getVFOInfo;
     bool getPWRInfo;
     bool getRITInfo;
     bool getXITInfo;
-    double defaultPWR;
     bool getPTTInfo;
     bool QSYWiping;
     bool getKeySpeed;
-    QString assignedCWKey;
     bool keySpeedSync;
-    qint32 driver;
     bool dxSpot2Rig;
-    QString pttType;
-    QString pttPortPath;
-    QString rts;
-    QString dtr;
-    qint16 civAddr; // -1 = AUTO; otherwise address
+    bool shareRigctld;
 
     bool operator== (const RigProfile &profile);
     bool operator!= (const RigProfile &profile);

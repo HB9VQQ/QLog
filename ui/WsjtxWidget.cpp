@@ -75,7 +75,10 @@ void WsjtxWidget::decodeReceived(WsjtxDecode decode)
             entry.freq = currFreq;
             entry.band = currBand;
             entry.decodedMode = status.mode;
-            entry.bandPlanMode = (status.mode == "FT8") ?  BandPlan::BAND_MODE_FT8 : BandPlan::BAND_MODE_DIGITAL;
+            entry.bandPlanMode = ( status.mode == "FT8" ) ? BandPlan::BAND_MODE_FT8
+                   : ( status.mode == "FT4" ) ? BandPlan::BAND_MODE_FT4
+                   : ( status.mode == "FT2" ) ? BandPlan::BAND_MODE_FT2
+                   : BandPlan::BAND_MODE_DIGITAL;
             entry.modeGroupString = BandPlan::bandMode2BandModeGroupString(entry.bandPlanMode);
             entry.spotter = profile.callsign.toUpper();
             entry.comment = decode.message;
@@ -154,7 +157,10 @@ void WsjtxWidget::decodeReceived(WsjtxDecode decode)
                 entry.band = currBand;
                 entry.decodedMode = status.mode;
                 entry.comment = decode.message;
-                entry.bandPlanMode = (status.mode == "FT8") ?  BandPlan::BAND_MODE_FT8 : BandPlan::BAND_MODE_DIGITAL;
+                entry.bandPlanMode = ( status.mode == "FT8" ) ? BandPlan::BAND_MODE_FT8
+                   : ( status.mode == "FT4" ) ? BandPlan::BAND_MODE_FT4
+                   : ( status.mode == "FT2" ) ? BandPlan::BAND_MODE_FT2
+                   : BandPlan::BAND_MODE_DIGITAL;
                 entry.modeGroupString = BandPlan::bandMode2BandModeGroupString(entry.bandPlanMode);
                 entry.spotter = profile.callsign.toUpper();
                 entry.dxcc_spotter = Data::instance()->lookupDxcc(entry.spotter);

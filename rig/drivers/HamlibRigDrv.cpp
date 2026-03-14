@@ -23,6 +23,9 @@
 #define PTTPORT(r) (&r->state.pttport)
 #endif
 
+int HamlibRigDrv::RIGCTLD_MODEL = RIG_MODEL_NETRIGCTL;
+int HamlibRigDrv::DUMMY_MODEL = RIG_MODEL_DUMMY;
+
 #define MUTEXLOCKER     qCDebug(runtime) << "Waiting for Drv mutex"; \
                         QMutexLocker locker(&drvLock); \
                         qCDebug(runtime) << "Using Drv"
@@ -1217,4 +1220,7 @@ QString HamlibRigDrv::hamlibErrorString(int errorCode)
     return ret;
 }
 
+#undef HAMLIB_FILPATHLEN
+#undef RIG_IS_SOFT_ERRCODE
+#undef PTTPORT
 #undef MUTEXLOCKER

@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>LoadDatabaseDialog</class>
+ <widget class="QDialog" name="LoadDatabaseDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>500</width>
+    <height>411</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Unpack Data &amp; Settings</string>
+  </property>
+  <property name="modal">
+   <bool>true</bool>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QGroupBox" name="warningGroup">
+     <property name="title">
+      <string>Warning</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_4">
+      <item>
+       <widget class="QLabel" name="warningLabel">
+        <property name="text">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;⚠ &lt;span style=&quot; font-weight:700;&quot;&gt;Current database will be DELETED!&lt;/span&gt;&lt;br/&gt;⚠ &lt;span style=&quot; font-weight:700;&quot;&gt;All stored passwords will be DELETED!&lt;/span&gt;&lt;br/&gt;⚠ &lt;span style=&quot; font-weight:700;&quot;&gt;The application will restart after loading&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;To preserve data, use Pack Data &amp;amp; Settings or Export QSOs first.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="selectDatabaseGroup">
+     <property name="title">
+      <string>Select Database</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <layout class="QHBoxLayout" name="fileLayout">
+        <item>
+         <widget class="QLabel" name="fileLabel">
+          <property name="text">
+           <string>File:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="fileEdit">
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="browseButton">
+          <property name="text">
+           <string>Browse...</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QLabel" name="statusLabel">
+        <property name="text">
+         <string>Status: No file selected</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="decryptGroup">
+     <property name="title">
+      <string>Decrypt Credentials</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <item>
+       <widget class="QLabel" name="passwordStatusLabel">
+        <property name="text">
+         <string>Enter password to decrypt credentials</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="passwordLayout">
+        <item>
+         <widget class="QLabel" name="passwordLabel">
+          <property name="text">
+           <string>Password:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="passwordEdit">
+          <property name="echoMode">
+           <enum>QLineEdit::Password</enum>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>LoadDatabaseDialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>316</x>
+     <y>260</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>browseButton</sender>
+   <signal>clicked()</signal>
+   <receiver>LoadDatabaseDialog</receiver>
+   <slot>browseFile()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>437</x>
+     <y>201</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>249</x>
+     <y>205</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>passwordEdit</sender>
+   <signal>textChanged(QString)</signal>
+   <receiver>LoadDatabaseDialog</receiver>
+   <slot>updateLoadButtonState()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>289</x>
+     <y>335</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>249</x>
+     <y>205</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>browseFile()</slot>
+  <slot>updateLoadButtonState()</slot>
+ </slots>
+</ui>

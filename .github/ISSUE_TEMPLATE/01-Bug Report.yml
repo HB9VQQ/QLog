@@ -5,6 +5,13 @@ body:
   - type: markdown
     attributes:
       value: |
+        > [!IMPORTANT]
+        > **Disclaimer Regarding Forks and Clones**
+        >
+        > Support is provided for the original, unmodified version of QLog.
+        > If you are using a fork, clone, or any modified version of this project, please direct your issue to the maintainer of that specific repository.
+        > This includes issues related to **core features**, as changes introduced in forks may directly or indirectly affect their behavior.
+
         Please reserve the issue tracker for reporting presumed bugs in QLog. If you have a question about usage or installation, please use the [QLog Discussions](https://github.com/foldynl/QLog/discussions)
 
   - type: textarea

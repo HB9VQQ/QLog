@@ -121,7 +121,7 @@ int MigrationSqlTest::currentVersion() const
 class MigrationSqlTest_FriendAccessor
 {
 public:
-    static int latestVersion() { return Migration::latestVersion; }
+    static int latestVersion() { return DBSchemaMigration::latestVersion; }
 };
 
 void MigrationSqlTest::migrateVersion_data()

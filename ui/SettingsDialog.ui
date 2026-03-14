@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>770</width>
-    <height>849</height>
+    <width>883</width>
+    <height>826</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -735,7 +735,7 @@
                  <item row="2" column="1">
                   <layout class="QHBoxLayout" name="horizontalLayout_37">
                    <property name="spacing">
-                    <number>20</number>
+                    <number>12</number>
                    </property>
                    <item>
                     <widget class="QComboBox" name="cwKeyModeSelect">
@@ -756,14 +756,45 @@
                    </item>
                   </layout>
                  </item>
-                 <item row="3" column="0">
+                 <item row="3" column="1">
+                  <layout class="QHBoxLayout" name="horizontalLayout_43">
+                   <property name="spacing">
+                    <number>12</number>
+                   </property>
+                   <item>
+                    <widget class="QCheckBox" name="cwPaddleOnlySidetoneCheckbox">
+                     <property name="text">
+                      <string>Paddle Only Sidetone</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="cwSidetoneFreqLabel">
+                     <property name="text">
+                      <string>Sidetone Freq:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QComboBox" name="cwSidetoneFreqCombo">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                 <item row="4" column="0">
                   <widget class="QLabel" name="cwDefaultSpeedLabel">
                    <property name="text">
                     <string>Default Speed</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="3" column="1">
+                 <item row="4" column="1">
                   <widget class="QSpinBox" name="cwDefaulSpeed">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
@@ -788,7 +819,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="4" column="1">
+                 <item row="5" column="1">
                   <spacer name="verticalSpacer_5">
                    <property name="orientation">
                     <enum>Qt::Vertical</enum>
@@ -801,7 +832,7 @@
                    </property>
                   </spacer>
                  </item>
-                 <item row="5" column="0" colspan="2">
+                 <item row="6" column="0" colspan="2">
                   <widget class="QStackedWidget" name="cwStackedWidget">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -1109,7 +1140,9 @@
 &lt;MYPWR&gt; = My Power in W
 &lt;EXCHSTR&gt; = Contest Exchange Message
 &lt;EXCHNR&gt; = Contest Exchange Serial Number
-&lt;EXCHNRN&gt; = Contest Exchange Serial Number (9→N, 0→T) 
+&lt;EXCHNRN&gt; = Contest Exchange Serial Number (9→N, 0→T)
+&lt;+&gt; = Speed +5 WPM (&lt;++&gt; = +10 WPM, etc.)
+&lt;-&gt; = Speed -5 WPM (&lt;--&gt; = -10 WPM, etc.)
 </string>
                    </property>
                    <property name="inputMask">
@@ -1179,7 +1212,9 @@
 &lt;MYPWR&gt; = My Power in W
 &lt;EXCHSTR&gt; = Contest Exchange Message
 &lt;EXCHNR&gt; = Contest Exchange Serial Number
-&lt;EXCHNRN&gt; = Contest Exchange Serial Number (9→N, 0→T) 
+&lt;EXCHNRN&gt; = Contest Exchange Serial Number (9→N, 0→T)
+&lt;+&gt; = Speed +5 WPM (&lt;++&gt; = +10 WPM, etc.)
+&lt;-&gt; = Speed -5 WPM (&lt;--&gt; = -10 WPM, etc.)
 </string>
                    </property>
                   </widget>
@@ -1207,7 +1242,9 @@
 &lt;MYPWR&gt; = My Power in W
 &lt;EXCHSTR&gt; = Contest Exchange Message
 &lt;EXCHNR&gt; = Contest Exchange Serial Number
-&lt;EXCHNRN&gt; = Contest Exchange Serial Number (9→N, 0→T) 
+&lt;EXCHNRN&gt; = Contest Exchange Serial Number (9→N, 0→T)
+&lt;+&gt; = Speed +5 WPM (&lt;++&gt; = +10 WPM, etc.)
+&lt;-&gt; = Speed -5 WPM (&lt;--&gt; = -10 WPM, etc.)
 </string>
                    </property>
                   </widget>
@@ -1235,7 +1272,9 @@
 &lt;MYPWR&gt; = My Power in W
 &lt;EXCHSTR&gt; = Contest Exchange Message
 &lt;EXCHNR&gt; = Contest Exchange Serial Number
-&lt;EXCHNRN&gt; = Contest Exchange Serial Number (9→N, 0→T) 
+&lt;EXCHNRN&gt; = Contest Exchange Serial Number (9→N, 0→T)
+&lt;+&gt; = Speed +5 WPM (&lt;++&gt; = +10 WPM, etc.)
+&lt;-&gt; = Speed -5 WPM (&lt;--&gt; = -10 WPM, etc.)
 </string>
                    </property>
                   </widget>
@@ -1263,7 +1302,9 @@
 &lt;MYPWR&gt; = My Power in W
 &lt;EXCHSTR&gt; = Contest Exchange Message
 &lt;EXCHNR&gt; = Contest Exchange Serial Number
-&lt;EXCHNRN&gt; = Contest Exchange Serial Number (9→N, 0→T) 
+&lt;EXCHNRN&gt; = Contest Exchange Serial Number (9→N, 0→T)
+&lt;+&gt; = Speed +5 WPM (&lt;++&gt; = +10 WPM, etc.)
+&lt;-&gt; = Speed -5 WPM (&lt;--&gt; = -10 WPM, etc.)
 </string>
                    </property>
                   </widget>
@@ -1291,7 +1332,9 @@
 &lt;MYPWR&gt; = My Power in W
 &lt;EXCHSTR&gt; = Contest Exchange Message
 &lt;EXCHNR&gt; = Contest Exchange Serial Number
-&lt;EXCHNRN&gt; = Contest Exchange Serial Number (9→N, 0→T) 
+&lt;EXCHNRN&gt; = Contest Exchange Serial Number (9→N, 0→T)
+&lt;+&gt; = Speed +5 WPM (&lt;++&gt; = +10 WPM, etc.)
+&lt;-&gt; = Speed -5 WPM (&lt;--&gt; = -10 WPM, etc.)
 </string>
                    </property>
                   </widget>
@@ -1319,7 +1362,9 @@
 &lt;MYPWR&gt; = My Power in W
 &lt;EXCHSTR&gt; = Contest Exchange Message
 &lt;EXCHNR&gt; = Contest Exchange Serial Number
-&lt;EXCHNRN&gt; = Contest Exchange Serial Number (9→N, 0→T) 
+&lt;EXCHNRN&gt; = Contest Exchange Serial Number (9→N, 0→T)
+&lt;+&gt; = Speed +5 WPM (&lt;++&gt; = +10 WPM, etc.)
+&lt;-&gt; = Speed -5 WPM (&lt;--&gt; = -10 WPM, etc.)
 </string>
                    </property>
                   </widget>
@@ -1615,7 +1660,24 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="3" column="0">
+                 <item row="1" column="1">
+                  <layout class="QHBoxLayout" name="horizontalLayout_10">
+                   <item>
+                    <widget class="QComboBox" name="rigInterfaceCombo">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QComboBox" name="rigModelSelect"/>
+                   </item>
+                  </layout>
+                 </item>
+                 <item row="2" column="0">
                   <widget class="QLabel" name="txRangeLabel">
                    <property name="toolTip">
                     <string>Minimum and maximum TX frequencies. Specific ranges are derived from allowed Band in the Setting.</string>
@@ -1625,12 +1687,15 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="3" column="1">
+                 <item row="2" column="1">
                   <layout class="QHBoxLayout" name="horizontalLayout_5">
                    <item>
                     <widget class="BaseDoubleSpinBox" name="rigTXFreqMinSpinBox">
                      <property name="toolTip">
                       <string>Minimum and maximum TX frequencies. Specific ranges are derived from allowed Band in the Setting.</string>
+                     </property>
+                     <property name="suffix">
+                      <string> MHz</string>
                      </property>
                      <property name="maximum">
                       <double>250000.000000000000000</double>
@@ -1639,11 +1704,11 @@
                    </item>
                    <item>
                     <widget class="QLabel" name="rigTXFreqSepLabel">
-                     <property name="maximumSize">
-                      <size>
-                       <width>30</width>
-                       <height>16777215</height>
-                      </size>
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
                      </property>
                      <property name="text">
                       <string>-</string>
@@ -1658,52 +1723,38 @@
                      <property name="toolTip">
                       <string>Minimum and maximum TX frequencies. Specific ranges are derived from allowed Band in the Setting.</string>
                      </property>
+                     <property name="suffix">
+                      <string> MHz</string>
+                     </property>
                      <property name="maximum">
                       <double>250000.000000000000000</double>
                      </property>
                     </widget>
                    </item>
-                   <item>
-                    <widget class="QLabel" name="rigTXFreqUnitsLabel">
-                     <property name="maximumSize">
-                      <size>
-                       <width>35</width>
-                       <height>16777215</height>
-                      </size>
-                     </property>
-                     <property name="text">
-                      <string>MHz</string>
-                     </property>
-                    </widget>
-                   </item>
                   </layout>
                  </item>
-                 <item row="4" column="0">
+                 <item row="3" column="0">
                   <widget class="QLabel" name="rigOffsetsLabel">
                    <property name="text">
                     <string>Offsets</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="4" column="1">
+                 <item row="3" column="1">
                   <layout class="QHBoxLayout" name="horizontalLayout_2">
-                   <item>
-                    <widget class="QLabel" name="rigRXOffsetLabel">
-                     <property name="text">
-                      <string>RX</string>
-                     </property>
-                    </widget>
-                   </item>
                    <item>
                     <widget class="BaseDoubleSpinBox" name="rigRXOffsetSpinBox">
                      <property name="sizePolicy">
-                      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                      <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
                        <horstretch>0</horstretch>
                        <verstretch>0</verstretch>
                       </sizepolicy>
                      </property>
                      <property name="toolTip">
                       <string>Enter manually RIT or Transverter Offset</string>
+                     </property>
+                     <property name="prefix">
+                      <string>RX: </string>
                      </property>
                      <property name="suffix">
                       <string> MHz</string>
@@ -1723,19 +1774,34 @@
                     </widget>
                    </item>
                    <item>
-                    <widget class="QLabel" name="rigTXOffsetLabel">
-                     <property name="text">
-                      <string>TX </string>
+                    <spacer name="horizontalSpacer_10">
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
                      </property>
-                    </widget>
+                     <property name="sizeType">
+                      <enum>QSizePolicy::Expanding</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>40</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
                    </item>
                    <item>
                     <widget class="BaseDoubleSpinBox" name="rigTXOffsetSpinBox">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
                      <property name="toolTip">
                       <string>Enter manually XIT or Transverter offset</string>
                      </property>
                      <property name="prefix">
-                      <string/>
+                      <string>TX: </string>
                      </property>
                      <property name="suffix">
                       <string> MHz</string>
@@ -1753,14 +1819,14 @@
                    </item>
                   </layout>
                  </item>
-                 <item row="5" column="0">
+                 <item row="4" column="0">
                   <widget class="QLabel" name="rigPWRDefaultLabel">
                    <property name="text">
                     <string>Default PWR</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="5" column="1">
+                 <item row="4" column="1">
                   <widget class="BaseDoubleSpinBox" name="rigPWRDefaultSpinBox">
                    <property name="toolTip">
                     <string>Enter default PWR (ex. when Rig is disconnected)</string>
@@ -1782,24 +1848,24 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="6" column="0">
+                 <item row="5" column="0">
                   <widget class="QLabel" name="rigAssignedCWKeyLabel">
                    <property name="text">
                     <string>Assigned CW Keyer</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="6" column="1">
+                 <item row="5" column="1">
                   <widget class="QComboBox" name="rigAssignedCWKeyCombo"/>
                  </item>
-                 <item row="7" column="0">
+                 <item row="6" column="0">
                   <widget class="QLabel" name="rigFeaturesLabel">
                    <property name="text">
                     <string>Rig Features</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="7" column="1">
+                 <item row="6" column="1">
                   <layout class="QHBoxLayout" name="horizontalLayout_6">
                    <property name="topMargin">
                     <number>0</number>
@@ -1827,13 +1893,6 @@
                      </property>
                     </widget>
                    </item>
-                  </layout>
-                 </item>
-                 <item row="8" column="1">
-                  <layout class="QHBoxLayout" name="horizontalLayout_7">
-                   <property name="topMargin">
-                    <number>0</number>
-                   </property>
                    <item>
                     <widget class="QCheckBox" name="rigGetFreqCheckBox">
                      <property name="text">
@@ -1844,6 +1903,13 @@
                      </property>
                     </widget>
                    </item>
+                  </layout>
+                 </item>
+                 <item row="7" column="1">
+                  <layout class="QHBoxLayout" name="horizontalLayout_7">
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
                    <item>
                     <widget class="QCheckBox" name="rigQSYWipingCheckBox">
                      <property name="text">
@@ -1851,13 +1917,6 @@
                      </property>
                     </widget>
                    </item>
-                  </layout>
-                 </item>
-                 <item row="9" column="1">
-                  <layout class="QHBoxLayout" name="horizontalLayout_10">
-                   <property name="topMargin">
-                    <number>0</number>
-                   </property>
                    <item>
                     <widget class="QCheckBox" name="rigGetPWRCheckBox">
                      <property name="text">
@@ -1877,14 +1936,14 @@
                    </item>
                   </layout>
                  </item>
-                 <item row="10" column="0">
+                 <item row="8" column="0">
                   <widget class="QLabel" name="dummyLabel">
                    <property name="text">
                     <string/>
                    </property>
                   </widget>
                  </item>
-                 <item row="10" column="1">
+                 <item row="8" column="1">
                   <layout class="QHBoxLayout" name="horizontalLayout_8">
                    <item>
                     <widget class="QCheckBox" name="rigGetXITCheckBox">
@@ -1902,7 +1961,7 @@
                    </item>
                   </layout>
                  </item>
-                 <item row="11" column="1">
+                 <item row="9" column="1">
                   <layout class="QHBoxLayout" name="horizontalLayout_11">
                    <property name="bottomMargin">
                     <number>0</number>
@@ -1923,7 +1982,7 @@
                    </item>
                   </layout>
                  </item>
-                 <item row="12" column="1">
+                 <item row="10" column="1">
                   <layout class="QHBoxLayout" name="horizontalLayout_4">
                    <property name="bottomMargin">
                     <number>0</number>
@@ -1937,7 +1996,119 @@
                    </item>
                   </layout>
                  </item>
-                 <item row="15" column="0" colspan="2">
+                 <item row="11" column="1">
+                  <layout class="QHBoxLayout" name="horizontalLayout_39">
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <item>
+                    <widget class="QCheckBox" name="rigShareCheckBox">
+                     <property name="toolTip">
+                      <string>Start rigctld daemon to share rig with other applications (e.g. WSJT-X)</string>
+                     </property>
+                     <property name="text">
+                      <string>Share Rig via port</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QSpinBox" name="rigSharePortSpinBox">
+                     <property name="minimum">
+                      <number>1024</number>
+                     </property>
+                     <property name="maximum">
+                      <number>65535</number>
+                     </property>
+                     <property name="value">
+                      <number>4532</number>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="rigShareAdvancedButton">
+                     <property name="text">
+                      <string>Advanced...</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <spacer name="horizontalSpacer_9">
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>40</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                  </layout>
+                 </item>
+                 <item row="12" column="0">
+                  <widget class="QLabel" name="rigPortTypeLabel">
+                   <property name="text">
+                    <string>Port Type</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="12" column="1">
+                  <layout class="QHBoxLayout" name="horizontalLayout_40">
+                   <item>
+                    <widget class="QComboBox" name="rigPortTypeCombo"/>
+                   </item>
+                   <item>
+                    <spacer name="horizontalSpacer_81">
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>40</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="rigPollIntervalLabel">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="text">
+                      <string>Poll Interval</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QSpinBox" name="rigPollIntervalSpinBox">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="suffix">
+                      <string> ms</string>
+                     </property>
+                     <property name="minimum">
+                      <number>100</number>
+                     </property>
+                     <property name="maximum">
+                      <number>60000</number>
+                     </property>
+                     <property name="value">
+                      <number>500</number>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                 <item row="13" column="0" colspan="2">
                   <widget class="QStackedWidget" name="rigStackedWidget">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
@@ -1977,7 +2148,7 @@
                      <item row="0" column="0">
                       <widget class="QLabel" name="rigPortLabel">
                        <property name="text">
-                        <string>Port</string>
+                        <string>Rig Port</string>
                        </property>
                       </widget>
                      </item>
@@ -2397,81 +2568,6 @@
                    <widget class="QWidget" name="rigSpecialOmni"/>
                   </widget>
                  </item>
-                 <item row="2" column="1">
-                  <widget class="QComboBox" name="rigModelSelect"/>
-                 </item>
-                 <item row="2" column="0">
-                  <widget class="QLabel" name="rigModelLabel">
-                   <property name="text">
-                    <string>Rig Model</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="1">
-                  <widget class="QComboBox" name="rigInterfaceCombo"/>
-                 </item>
-                 <item row="13" column="0">
-                  <widget class="QLabel" name="rigPortTypeLabel">
-                   <property name="text">
-                    <string>Port Type</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="13" column="1">
-                  <layout class="QHBoxLayout" name="horizontalLayout_40">
-                   <item>
-                    <widget class="QComboBox" name="rigPortTypeCombo"/>
-                   </item>
-                   <item>
-                    <spacer name="horizontalSpacer_81">
-                     <property name="orientation">
-                      <enum>Qt::Horizontal</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>40</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                   <item>
-                    <widget class="QLabel" name="rigPollIntervalLabel">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="text">
-                      <string>Poll Interval</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QSpinBox" name="rigPollIntervalSpinBox">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="suffix">
-                      <string> ms</string>
-                     </property>
-                     <property name="minimum">
-                      <number>100</number>
-                     </property>
-                     <property name="maximum">
-                      <number>60000</number>
-                     </property>
-                     <property name="value">
-                      <number>500</number>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
-                 </item>
                 </layout>
                </widget>
               </item>
@@ -2588,15 +2684,32 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="3" column="0">
-                  <widget class="QLabel" name="rotModelLabel">
+                 <item row="2" column="0">
+                  <widget class="QLabel" name="rotInterfaceLabel">
                    <property name="text">
-                    <string>Rot Model</string>
+                    <string>Interface</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="3" column="1">
-                  <widget class="QComboBox" name="rotModelSelect"/>
+                 <item row="2" column="1">
+                  <layout class="QHBoxLayout" name="horizontalLayout_42">
+                   <item>
+                    <widget class="QComboBox" name="rotInterfaceCombo">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="sizeAdjustPolicy">
+                      <enum>QComboBox::AdjustToContentsOnFirstShow</enum>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QComboBox" name="rotModelSelect"/>
+                   </item>
+                  </layout>
                  </item>
                  <item row="4" column="0">
                   <widget class="QLabel" name="rotPortTypeLabel">
@@ -2872,16 +2985,6 @@
                     </layout>
                    </widget>
                   </widget>
-                 </item>
-                 <item row="2" column="0">
-                  <widget class="QLabel" name="rotInterfaceLabel">
-                   <property name="text">
-                    <string>Interface</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="1">
-                  <widget class="QComboBox" name="rotInterfaceCombo"/>
                  </item>
                 </layout>
                </widget>
@@ -3764,22 +3867,44 @@
             <layout class="QHBoxLayout" name="horizontalLayout">
              <item>
               <widget class="QLineEdit" name="tqslPathEdit">
-               <property name="readOnly">
-                <bool>true</bool>
-               </property>
                <property name="placeholderText">
-                <string>Use default path</string>
+                <string>Leave empty for auto-detection</string>
+               </property>
+               <property name="clearButtonEnabled">
+                <bool>true</bool>
                </property>
               </widget>
              </item>
              <item>
               <widget class="QPushButton" name="tqslPathButton">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
                <property name="text">
                 <string>Browse</string>
                </property>
                <property name="icon">
                 <iconset theme="folder-open">
                  <normaloff>.</normaloff>.</iconset>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="tqslAutoButton">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="toolTip">
+                <string>Auto-detect TQSL path</string>
+               </property>
+               <property name="text">
+                <string>Auto-Detect</string>
                </property>
               </widget>
              </item>
@@ -3801,7 +3926,21 @@
              </property>
             </spacer>
            </item>
-           <item row="5" column="1">
+           <item row="4" column="0">
+            <widget class="QLabel" name="tqslVersionLabel">
+             <property name="text">
+              <string>TQSL Version</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="1">
+            <widget class="QLabel" name="tqslVersionValueLabel">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="1">
             <spacer name="verticalSpacer_19">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
@@ -3814,7 +3953,7 @@
              </property>
             </spacer>
            </item>
-           <item row="4" column="1">
+           <item row="5" column="1">
             <widget class="QLabel" name="lotwTextMessage">
              <property name="text">
               <string>Using an internal TQSL instance</string>
@@ -4847,6 +4986,8 @@
   <tabstop>cwModelSelect</tabstop>
   <tabstop>cwKeyModeSelect</tabstop>
   <tabstop>cwSwapPaddlesCheckbox</tabstop>
+  <tabstop>cwPaddleOnlySidetoneCheckbox</tabstop>
+  <tabstop>cwSidetoneFreqCombo</tabstop>
   <tabstop>cwDefaulSpeed</tabstop>
   <tabstop>cwPortEdit</tabstop>
   <tabstop>cwBaudSelect</tabstop>
@@ -4889,6 +5030,9 @@
   <tabstop>rigGetKeySpeedCheckBox</tabstop>
   <tabstop>rigKeySpeedSyncCheckBox</tabstop>
   <tabstop>rigDXSpots2RigCheckBox</tabstop>
+  <tabstop>rigShareCheckBox</tabstop>
+  <tabstop>rigSharePortSpinBox</tabstop>
+  <tabstop>rigShareAdvancedButton</tabstop>
   <tabstop>rigPortTypeCombo</tabstop>
   <tabstop>rigPollIntervalSpinBox</tabstop>
   <tabstop>cwNetPortSpin</tabstop>
@@ -4952,6 +5096,7 @@
   <tabstop>lotwPasswordEdit</tabstop>
   <tabstop>tqslPathEdit</tabstop>
   <tabstop>tqslPathButton</tabstop>
+  <tabstop>tqslAutoButton</tabstop>
   <tabstop>qrzApiKeyEdit</tabstop>
   <tabstop>qrzCallsignApiKeyTableView</tabstop>
   <tabstop>qrzCallsignApiKeyAddButton</tabstop>
@@ -4965,6 +5110,7 @@
   <tabstop>modeTableView</tabstop>
   <tabstop>wsjtForwardEdit</tabstop>
   <tabstop>wsjtPortSpin</tabstop>
+  <tabstop>wsjtColorCqSpotsCheckbox</tabstop>
   <tabstop>wsjtMulticastCheckbox</tabstop>
   <tabstop>wsjtMulticastAddressEdit</tabstop>
   <tabstop>wsjtMulticastTTLSpin</tabstop>
@@ -5569,6 +5715,22 @@
    </hints>
   </connection>
   <connection>
+   <sender>tqslAutoButton</sender>
+   <signal>clicked()</signal>
+   <receiver>SettingsDialog</receiver>
+   <slot>tqslAutoDetect()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>780</x>
+     <y>546</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>359</x>
+     <y>424</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
    <sender>stationAddProfileButton</sender>
    <signal>clicked()</signal>
    <receiver>SettingsDialog</receiver>
@@ -6112,6 +6274,70 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>rigShareCheckBox</sender>
+   <signal>stateChanged(int)</signal>
+   <receiver>SettingsDialog</receiver>
+   <slot>rigShareChanged(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>455</x>
+     <y>527</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>384</x>
+     <y>424</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>rigShareAdvancedButton</sender>
+   <signal>clicked()</signal>
+   <receiver>SettingsDialog</receiver>
+   <slot>showRigctldAdvanced()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>688</x>
+     <y>527</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>384</x>
+     <y>424</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>rigInterfaceCombo</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>SettingsDialog</receiver>
+   <slot>rigShareChanged(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>564</x>
+     <y>162</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>384</x>
+     <y>424</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>rigPortTypeCombo</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>SettingsDialog</receiver>
+   <slot>rigShareChanged(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>437</x>
+     <y>559</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>384</x>
+     <y>424</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>save()</slot>
@@ -6123,6 +6349,7 @@
   <slot>delAntProfile()</slot>
   <slot>editBandOffsets()</slot>
   <slot>tqslPathBrowse()</slot>
+  <slot>tqslAutoDetect()</slot>
   <slot>addStationProfile()</slot>
   <slot>deleteStationProfile()</slot>
   <slot>doubleClickStationProfile(QModelIndex)</slot>
@@ -6181,10 +6408,12 @@
   <slot>qrzDelCallsignAPIKey()</slot>
   <slot>cwModeChanged(int)</slot>
   <slot>rigFlowControlChanged(int)</slot>
+  <slot>rigShareChanged(int)</slot>
+  <slot>showRigctldAdvanced()</slot>
  </slots>
  <buttongroups>
+  <buttongroup name="buttonGroup"/>
   <buttongroup name="buttonGroup_2"/>
   <buttongroup name="buttonGroup_3"/>
-  <buttongroup name="buttonGroup"/>
  </buttongroups>
 </ui>

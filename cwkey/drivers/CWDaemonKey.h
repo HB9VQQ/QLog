@@ -14,6 +14,7 @@ public:
                          const quint16 port,
                          const CWKey::CWKeyModeID mode,
                          const qint32 defaultSpeed,
+                         qint32 sidetoneFrequency,
                          QObject *parent = nullptr);
     virtual ~CWDaemonKey(){};
 
@@ -29,6 +30,7 @@ protected:
     QString lastLogicalError;
     bool isOpen;
     const QChar ESCChar;
+    qint32 sidetoneFrequency;
 };
 
 #endif // QLOG_CWKEY_DRIVER_CWDAEMONKEY_H

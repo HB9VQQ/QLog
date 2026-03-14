@@ -7,6 +7,7 @@
 #include "data/Gridsquare.h"
 #include "data/Dxcc.h"
 #include "ui/NewContactWidget.h"
+#include "core/CredentialStore.h"
 
 struct KSTChatMsg
 {
@@ -106,12 +107,17 @@ private:
     int roomIndex;
 };
 
-class KSTChat : public QObject
+class KSTChat : public QObject, public SecureServiceBase<KSTChat>
 {
     Q_OBJECT
 
+protected:
+    static const QString SECURE_STORAGE_KEY;
+
 public:
     const static QStringList chatRooms;
+
+    DECLARE_SECURE_SERVICE(KSTChat);
 
     explicit KSTChat(int chatRoomIndex,
                      const QString &username,
@@ -124,7 +130,7 @@ public:
     KSTUsersInfo getUserInfo(const QString& username) const;
 
     static const QString getUsername();
-    static const QString getPassword();
+    static const QString getPasswd();
     static void saveUsernamePassword(const QString&, const QString&);
 
 public slots:
@@ -181,7 +187,6 @@ private:
     const QString KST_HOSTNAME = "www.on4kst.org";
     const quint16 KST_PORT = 23000;
     const quint16 KST_UPDATE_USERS_LIST = 3 * 60;// update user list every 3*60 seconds
-    static const QString SECURE_STORAGE_KEY;
 };
 
 #endif // QLOG_SERVICE_KSTCHAT_KSTCHAT_H

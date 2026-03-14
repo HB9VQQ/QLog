@@ -14,12 +14,16 @@ CWWinKey::CWWinKey(const QString &portName,
                      const CWKey::CWKeyModeID mode,
                      const qint32 defaultSpeed,
                      bool paddleSwap,
+                     bool paddleOnlySidetone,
+                     qint32 sidetoneFrequency,
                      QObject *parent)
     : CWKey(mode, defaultSpeed, parent),
       CWKeySerialInterface(portName, baudrate, 5000),
       isInHostMode(false),
       xoff(false),
       paddleSwap(paddleSwap),
+      paddleOnlySidetone(paddleOnlySidetone),
+      sidetoneFrequency(sidetoneFrequency),
       version(0)
 {
     FCT_IDENTIFICATION;
@@ -221,6 +225,9 @@ bool CWWinKey::open()
     /* Set POT Range */
     __setPOTRange();
 
+    /* Sidetone Setting */
+    __setSidetone(!paddleOnlySidetone);
+
     /* Set Default value */
     __setWPM(defaultWPMSpeed);
 
@@ -257,9 +264,27 @@ bool CWWinKey::sendText(const QString &text)
     qCDebug(runtime) << "Waiting for WriteBuffer Mutex";
     writeBufferMutex.lock();
     qCDebug(runtime) << "Appending input string";
-    QString chpString(text);
-    chpString.replace("\n", "");
-    writeBuffer.append(chpString.toLocal8Bit().data());
+
+    int pos = 0;
+    QRegularExpressionMatchIterator it = speedMarkerRE().globalMatch(text);
+    while ( it.hasNext() )
+    {
+        QRegularExpressionMatch match = it.next();
+        QString segment = text.mid(pos, match.capturedStart() - pos);
+        segment.remove('\n');
+        writeBuffer.append(segment.toLatin1());
+
+        qint16 newWPM = applySpeedMarker(match.captured(1));
+        writeBuffer.append(static_cast<char>(0x1C)); // WinKey buffered speed change
+        writeBuffer.append(static_cast<char>(newWPM));
+        emit keyChangedWPMSpeed(newWPM);
+
+        pos = match.capturedEnd();
+    }
+    QString lastSegment = text.mid(pos);
+    lastSegment.remove('\n');
+    writeBuffer.append(lastSegment.toLatin1());
+
     writeBufferMutex.unlock();
 
     tryAsyncWrite();
@@ -370,9 +395,9 @@ void CWWinKey::handleReadyRead()
     else if ( (rcvByte & 0xC0) == 0x80 )
     {
         qint32 potValue = (rcvByte & 0x7F);
-        qint32 currentWPM = minWPMRange + potValue;
-        qCDebug(runtime) << "\tPot: " << potValue << "; WPM=" << currentWPM;
-        setWPM(currentWPM);
+        qint32 potWPM = minWPMRange + potValue;
+        qCDebug(runtime) << "\tPot: " << potValue << "; WPM=" << potWPM;
+        setWPM(potWPM);
     }
     else
     {
@@ -450,6 +475,7 @@ bool CWWinKey::__setWPM(const qint16 wpm)
         return false;
     }
 
+    currentWPM = wpm;
     return true;
 }
 
@@ -674,6 +700,88 @@ bool CWWinKey::__setPOTRange()
     {
         qWarning() << "Unexpected size of write response or communication error";
         qCDebug(runtime) << lastError();
+    }
+
+    return true;
+}
+
+QList<QPair<QString, int>> CWWinKey::sidetoneFrequencies()
+{
+    return {
+        {tr("4000 Hz"), 4000},
+        {tr("2000 Hz"), 2000},
+        {tr("1333 Hz"), 1333},
+        {tr("1000 Hz"), 1000},
+        {tr("800 Hz"),   800},
+        {tr("666 Hz"),   666},
+        {tr("571 Hz"),   571},
+        {tr("500 Hz"),   500},
+        {tr("444 Hz"),   444},
+        {tr("400 Hz"),   400}
+    };
+}
+
+bool CWWinKey::__setSidetone(bool enabled)
+{
+    FCT_IDENTIFICATION;
+
+    /*
+     * Sidetone Control command: 0x01 <nn>
+     * Available on WinKey v2+ only (WK2 sidetone is always enabled).
+     *
+     * nn bit layout (Table 1 from WinKey spec):
+     *   Bit 7     : Paddle Only Sidetone - when 1, sidetone is muted for CW
+     *               sourced from the host port; paddle entry still has sidetone.
+     *   Bits 6-4  : Unused, set to zero.
+     *   Bits 3-0  : Sidetone frequency N (Table 2):
+     *               0x1=4000Hz, 0x2=2000Hz, 0x3=1333Hz, 0x4=1000Hz,
+     *               0x5=800Hz,  0x6=666Hz,  0x7=571Hz,  0x8=500Hz,
+     *               0x9=444Hz,  0xA=400Hz
+     *
+     * enabled=false -> Paddle Only Sidetone (0x80 | freqCode):
+     *                  host CW is muted, paddle sidetone at configured frequency.
+     * enabled=true  -> normal sidetone at configured frequency (freqCode).
+     */
+    if ( version < 20 )
+    {
+        qCDebug(runtime) << "Sidetone control not supported on WK1";
+        return false;
+    }
+
+    if ( !isInHostMode )
+    {
+        qCWarning(runtime) << "Key is not in Host Mode";
+        return false;
+    }
+
+    /* Convert Hz to WinKey frequency code (Table 2 of WinKey spec).
+     * sidetoneFrequency is stored in Hz; the combo shares Hz with CWDaemon. */
+    static const int hzToCode[][2] =
+    {
+        {4000, 1}, {2000, 2}, {1333, 3}, {1000, 4}, {800, 5},
+        {666,  6}, { 571, 7}, { 500, 8}, { 444, 9}, {400, 10}
+    };
+    int freqCode = 5; // fallback: 800 Hz
+    for ( const int (&pair)[2] : hzToCode )
+    {
+        if ( pair[0] == sidetoneFrequency )
+        {
+            freqCode = pair[1];
+            break;
+        }
+    }
+    unsigned char freqCodeByte = static_cast<unsigned char>(freqCode & 0x0F);
+    QByteArray cmd;
+    cmd.resize(2);
+    cmd[0] = 0x01;
+    cmd[1] = enabled ? freqCodeByte : static_cast<unsigned char>(0x80u | freqCodeByte);
+
+    qint64 size = writeAsyncData(cmd);
+    if ( size != 2 )
+    {
+        qWarning() << "Unexpected size of write response or communication error";
+        qCDebug(runtime) << lastError();
+        return false;
     }
 
     return true;

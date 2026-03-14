@@ -10,6 +10,8 @@
 #include "core/zonedetect.h"
 #include "core/QuadKeyCache.h"
 
+class QCompleter;
+
 class Data : public QObject
 {
     Q_OBJECT
@@ -131,7 +133,6 @@ public:
     static int getITUZMax();
     static int getCQZMin();
     static int getCQZMax();
-    static QString dbFilename();
     static QString debugFilename();
     static double MHz2UserFriendlyFreq(double,
                                        QString &unit,
@@ -174,6 +175,7 @@ public:
     QStringList potaIDList() { return potaRefID.keys();}
     QString getIANATimeZone(double, double);
     QStringList sigIDList();
+    static QCompleter* createCountyCompleter(int dxcc, QObject *parent = nullptr);
 
 signals:
 

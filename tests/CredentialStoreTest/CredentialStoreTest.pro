@@ -1,4 +1,4 @@
-QT += testlib core widgets
+QT += testlib core widgets sql
 CONFIG += console testcase c++11
 TEMPLATE = app
 TARGET = tst_credentialstore
@@ -7,8 +7,17 @@ INCLUDEPATH += $$PWD/../..
 
 SOURCES += \
     tst_credentialstore.cpp \
-    ../../core/CredentialStore.cpp
+    test_stubs.cpp \
+    ../../core/CredentialStore.cpp \
+    ../../core/PasswordCipher.cpp \
+    ../../core/LogParam.cpp
 
+HEADERS += \
+    ../../core/CredentialStore.h \
+    ../../core/PasswordCipher.h \
+    ../../core/LogParam.h
+
+# QtKeychain
 !isEmpty(QTKEYCHAININCLUDEPATH) {
    INCLUDEPATH += $$QTKEYCHAININCLUDEPATH
 }
@@ -20,5 +29,16 @@ SOURCES += \
 equals(QT_MAJOR_VERSION, 6): LIBS += -lqt6keychain
 equals(QT_MAJOR_VERSION, 5): LIBS += -lqt5keychain
 
-HEADERS += \
-    ../../core/CredentialStore.h
+# OpenSSL (for PasswordCipher)
+!isEmpty(OPENSSLINCLUDEPATH) {
+    INCLUDEPATH += $$OPENSSLINCLUDEPATH
+}
+!isEmpty(OPENSSLLIBPATH) {
+    LIBS += -L$$OPENSSLLIBPATH
+}
+
+win32 {
+    LIBS += -llibcrypto
+} else {
+    LIBS += -lcrypto
+}

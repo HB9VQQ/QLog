@@ -346,6 +346,7 @@ private:
     bool isWWFFValid(WWFFEntity *entity);
 
     void useNearestSpotInfo(const QString &in_callsign);
+    void updateCountyCompleter(int dxcc);
 
     bool shouldStartContest();
     void startContest(const QDateTime &date);
@@ -370,6 +371,7 @@ private:
     PropConditions *prop_cond;
     QCompleter *satCompleter;
     QCompleter *sotaCompleter;
+    QCompleter *countyCompleter;
     MultiselectCompleter *potaCompleter;
     QCompleter *wwffCompleter;
     QCompleter *sigCompleter;

@@ -62,8 +62,8 @@ set "VCPKG_ZLIB_PKG=zlib_x64-windows"
 
 rem -- Hamlib Settings
 set "HAMLIBVERSION_MAJOR=4"
-set "HAMLIBVERSION_MINOR=6"
-set "HAMLIBVERSION_PATCH=5"
+set "HAMLIBVERSION_MINOR=7"
+set "HAMLIBVERSION_PATCH=0"
 
 rem === END OF CONFIGURATION ===
 
@@ -139,7 +139,10 @@ echo === Running qmake ===
   "PTHREADINCLUDEPATH=%PTHREADINCLUDEPATH%" ^
   "PTHREADLIBPATH=%PTHREADLIBPATH%" ^
   "ZLIBINCLUDEPATH=%ZLIBINCLUDEPATH%" ^
-  "ZLIBLIBPATH=%ZLIBLIBPATH%"
+  "ZLIBLIBPATH=%ZLIBLIBPATH%" ^
+  "OPENSSLINCLUDEPATH=%OPENSSLROOT%/include" ^
+  "OPENSSLLIBPATH=%OPENSSLROOT%/lib"
+
 if errorlevel 1 exit /b 10
 
 echo === jom qmake_all ===
@@ -221,6 +224,13 @@ copy /Y "%HAMLIBBINPATH%\*.dll" "%DEPLOY_DIR%"
 
 if errorlevel 1 (
   echo ERROR: Cannot copy Hamlib DLL to "%DEPLOY_DIR%"
+  goto :fail
+)
+
+copy /Y "%HAMLIBBINPATH%\rigctld.exe" "%DEPLOY_DIR%"
+
+if errorlevel 1 (
+  echo ERROR: Cannot copy rigctld.exe to "%DEPLOY_DIR%"
   goto :fail
 )
 

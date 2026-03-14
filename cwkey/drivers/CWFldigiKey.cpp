@@ -132,7 +132,7 @@ bool CWFldigiKey::sendText(const QString &text)
 
     QList<QPair<QString, QString>> params;
 
-    QString chpString(text);
+    QString chpString = stripSpeedMarkers(text);
 
     if ( chpString.contains("\n") )
     {

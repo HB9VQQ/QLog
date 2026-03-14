@@ -9,6 +9,8 @@
 #include "RigCaps.h"
 #include "data/DxSpot.h"
 
+class RigctldManager;
+
 enum VFOID
 {
     VFO1 = 0
@@ -20,6 +22,8 @@ class Rig : public QObject
 {
     Q_OBJECT
 public:
+
+    static int DEFAULT_MODEL;
 
     enum DriverID
     {
@@ -179,6 +183,7 @@ private:
     bool connected;
     QTimer *heartBeatTimer;
     const quint16 HEARTBEATPERIOD = 1000; // in ms
+    RigctldManager *rigctldManager = nullptr;
 };
 
 Q_DECLARE_METATYPE(Rig::Status);

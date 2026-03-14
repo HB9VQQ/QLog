@@ -7,11 +7,13 @@ CWDaemonKey::CWDaemonKey(const QString &hostname,
                          const quint16 port,
                          const CWKey::CWKeyModeID mode,
                          const qint32 defaultSpeed,
+                         qint32 sidetoneFrequency,
                          QObject *parent) :
     CWKey(mode, defaultSpeed, parent),
     CWKeyUDPInterface(hostname, port),
     isOpen(false),
-    ESCChar(27)
+    ESCChar(27),
+    sidetoneFrequency(sidetoneFrequency)
 {
     FCT_IDENTIFICATION;
 
@@ -25,6 +27,12 @@ bool CWDaemonKey::open()
     FCT_IDENTIFICATION;
 
     isOpen = isSocketReady();
+
+    if ( isOpen && sidetoneFrequency > 0 )
+    {
+        QString toneCmd(ESCChar + QString("3") + QString::number(sidetoneFrequency));
+        sendData(toneCmd.toLatin1());
+    }
 
     return isOpen;
 }
@@ -63,11 +71,26 @@ bool CWDaemonKey::sendText(const QString &text)
         return false;
     }
 
-    QString chpString(text);
-    chpString.replace("\n", "");
+    int pos = 0;
+    QRegularExpressionMatchIterator it = speedMarkerRE().globalMatch(text);
+    while ( it.hasNext() )
+    {
+        QRegularExpressionMatch match = it.next();
+        QString segment = text.mid(pos, match.capturedStart() - pos);
+        segment.remove('\n');
+        if ( !segment.isEmpty() )
+            sendData(segment.toLatin1());
 
-    //do not solve possible socket errors - it is the UDP connection
-    return (sendData(chpString.toLatin1()) > 0) ? true : false;
+        setWPM(applySpeedMarker(match.captured(1)));
+
+        pos = match.capturedEnd();
+    }
+    QString lastSegment = text.mid(pos);
+    lastSegment.remove('\n');
+    if ( !lastSegment.isEmpty() )
+        sendData(lastSegment.toLatin1());
+
+    return true;
 }
 
 bool CWDaemonKey::setWPM(const qint16 wpm)
@@ -84,6 +107,7 @@ bool CWDaemonKey::setWPM(const qint16 wpm)
         return false;
     }
 
+    currentWPM = wpm;
     QString sentString(ESCChar + QString("2") + QString::number(wpm));
     emit keyChangedWPMSpeed(wpm);
     return (sendData(sentString.toLatin1()) > 0) ? true : false;

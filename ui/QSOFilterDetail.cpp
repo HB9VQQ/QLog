@@ -87,6 +87,7 @@ void QSOFilterDetail::addCondition(int fieldIdx, int operatorId, QString value)
     conditionCombo->addItem(QString(tr("Greater Than")));
     conditionCombo->addItem(QString(tr("Less Than")));
     conditionCombo->addItem(QString(tr("Starts with")));
+    conditionCombo->addItem(QString(tr("RegExp")));
     conditionCombo->setObjectName(QString::fromUtf8("conditionCombo%1").arg(condCount));
 
     if ( operatorId >= 0 )

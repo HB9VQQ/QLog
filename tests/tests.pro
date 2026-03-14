@@ -3,10 +3,13 @@ CONFIG += ordered
 SUBDIRS += CallsignTest \
            CredentialStoreTest \
            DataTest \
+           FileCompressorTest \
            GridsquareTest \
            BandPlanTest \
            AlertEvaluatorTest \
            DxServerStringTest \
            HostsPortStringTest \
            MigrationTest \
-           QuadKeyCacheTest
+           PasswordCipherTest \
+           QuadKeyCacheTest \
+           RigctldManagerTest

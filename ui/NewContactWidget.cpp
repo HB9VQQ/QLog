@@ -46,6 +46,7 @@ NewContactWidget::NewContactWidget(QWidget *parent) :
     ui(new Ui::NewContactWidget),
     uiDynamic(new NewContactDynamicWidgets(true, this)),
     prop_cond(nullptr),
+    countyCompleter(nullptr),
     QSOFreq(0.0),
     bandwidthFilter(BANDWIDTH_UNKNOWN),
     rigOnline(false),
@@ -196,6 +197,8 @@ NewContactWidget::NewContactWidget(QWidget *parent) :
     sotaCompleter->setFilterMode(Qt::MatchStartsWith);
     sotaCompleter->setModelSorting(QCompleter::CaseSensitivelySortedModel);
     uiDynamic->sotaEdit->setCompleter(nullptr);
+
+    uiDynamic->countyEdit->setCompleter(nullptr);
 
     sigCompleter = new QCompleter(uiDynamic->sigEdit);
     sigCompleter->setCaseSensitivity(Qt::CaseInsensitive);
@@ -498,6 +501,7 @@ void NewContactWidget::setDxccInfo(const DxccEntity &curr)
         ui->flagView->setPixmap((!dxccEntity.flag.isEmpty() ) ? QPixmap(QString(":/flags/64/%1.png").arg(dxccEntity.flag))
                                                               : QPixmap() );
         updateDxccStatus();
+        updateCountyCompleter(dxccEntity.dxcc);
     }
     else
     {
@@ -512,6 +516,7 @@ void NewContactWidget::setDxccInfo(const DxccEntity &curr)
         ui->dxccStatus->clear();
 
         emit newTarget(qQNaN(), qQNaN());
+        updateCountyCompleter(0);
     }
 }
 
@@ -531,6 +536,16 @@ void NewContactWidget::setDxccInfo(const QString &callsign)
         entity = Data::instance()->lookupDxcc(callsign.toUpper());
 
     setDxccInfo(entity);
+}
+
+void NewContactWidget::updateCountyCompleter(int dxcc)
+{
+    FCT_IDENTIFICATION;
+
+    uiDynamic->countyEdit->setCompleter(nullptr);
+    delete countyCompleter;
+    countyCompleter = ( dxcc != 0 ) ? Data::createCountyCompleter(dxcc, this) : nullptr;
+    uiDynamic->countyEdit->setCompleter(countyCompleter);
 }
 
 void NewContactWidget::useFieldsFromPrevQSO(const QString &callsign, const QString &grid)
@@ -2791,9 +2806,15 @@ void NewContactWidget::updateSatMode()
     if ( Data::instance()->propagationModeTextToID(ui->propagationModeEdit->currentText()) != "SAT")
         return;
 
-    uiDynamic->satModeEdit->setCurrentText(Data::instance()->satModeIDToText(( bandTX.satDesignator.isEmpty()
-                                                                               || bandRX.satDesignator.isEmpty() ) ? ""
-                                                                                                                   : bandTX.satDesignator + bandRX.satDesignator));
+    const QString satModeText = Data::instance()->satModeIDToText(( bandTX.satDesignator.isEmpty()
+                                                                    || bandRX.satDesignator.isEmpty() ) ? ""
+                                                                                                        : bandTX.satDesignator + bandRX.satDesignator);
+    // Only update if a valid SAT mode was resolved.
+    // When the rig reports only one VFO frequency, bandTX == bandRX which produces
+    // an invalid designator combination (e.g. "SS") and satModeIDToText returns "".
+    // In that case we preserve whatever SAT mode is currently set.
+    if ( !satModeText.isEmpty() )
+        uiDynamic->satModeEdit->setCurrentText(satModeText);
 }
 
 void NewContactWidget::tuneDx(const DxSpot &spot)
@@ -2836,11 +2857,11 @@ void NewContactWidget::tuneDx(const DxSpot &spot)
             // therefore change Mode without signals and then set the
             // final mode
             changeModeWithoutSignals(mode, subMode);
-            if (spot.bandPlanMode ==  BandPlan::BAND_MODE_FT8
+            if (BandPlan::isFTxBandMode(spot.bandPlanMode)
                 || spot.bandPlanMode ==  BandPlan::BAND_MODE_DIGITAL )
             {
-                // if rig is connected then FT8 mode is overwrotten by rit
-                // but it the rig is not connected then mode contains a correct
+                // if rig is connected then FT8 mode is overwrotten by rig
+                // but if the rig is not connected then mode contains a correct
                 // mode
                 rig->setMode("SSB", "USB", true);
             }

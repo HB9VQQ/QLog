@@ -69,7 +69,7 @@ UploadQSODialog::UploadQSODialog(QWidget *parent) :
                                          "qrzcom_qso_upload_date",
                                          ui->qrzCheckbox,
                                          ui->qrzNumberLabel,
-                                        !QRZBase::getLogbookAPIKey().isEmpty()));
+                                        !QRZBase::getLogbookAPIKey(QRZBase::getInternalAPIUsername()).isEmpty()));
 
     onlineServices.insert(WAVELOGID, UploadTask(WAVELOGID,
                                          tr("Wavelog"),
@@ -94,8 +94,29 @@ UploadQSODialog::UploadQSODialog(QWidget *parent) :
 
     setEQSLSettingVisible(false);
     setClublogSettingVisible(false);
+    setLotwSettingVisible(false);
     setQSODetailVisible(false);
     setWavelogSettingVisible(false);
+
+    // First entry is empty (no -l argument will be passed to TQSL).
+    tqslLocations = LotwBase::getTQSLStationLocations();
+    ui->lotwLocationCombo->addItem(tr("Unspecified"), QString());
+    for ( const TQSLStationLocation &loc : static_cast<const QList<TQSLStationLocation>>(tqslLocations) )
+    {
+        QString displayText = loc.name;
+        QStringList details;
+        if ( !loc.callsign.isEmpty() )
+            details << loc.callsign;
+        if ( !loc.grid.isEmpty() )
+            details << loc.grid.toUpper();
+        if ( !details.isEmpty() )
+            displayText += " (" + details.join(", ") + ")";
+        ui->lotwLocationCombo->addItem(displayText, loc.name);
+    }
+
+    connect(ui->lotwLocationCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &UploadQSODialog::updateLotwLocationWarning);
+
     loadDialogState();
     getWavelogStationID();
     ui->myCallsignCombo->blockSignals(false);
@@ -133,6 +154,14 @@ void UploadQSODialog::setClublogSettingVisible(bool visible)
     FCT_IDENTIFICATION;
 
     ui->clublogGroup->setVisible(visible);
+    adjustSize();
+}
+
+void UploadQSODialog::setLotwSettingVisible(bool visible)
+{
+    FCT_IDENTIFICATION;
+
+    ui->lotwGroup->setVisible(visible);
     adjustSize();
 }
 
@@ -186,6 +215,11 @@ void UploadQSODialog::loadDialogState()
     ui->eqslQTHProfileEdit->setText(LogParam::getUploadeqslQTHProfile());
     ui->myStationProfileCheckbox->setChecked(LogParam::getUploadQSOFilterType() == 1);
     ui->wavelogStationIDSpin->setValue(LogParam::getCloudlogStationID());
+
+    const int locIdx = ui->lotwLocationCombo->findData(LogParam::getUploadLoTWLocation());
+    ui->lotwLocationCombo->setCurrentIndex(locIdx >= 0 ? locIdx : 0);
+
+    updateLotwLocationWarning();
 }
 
 void UploadQSODialog::saveDialogState()
@@ -204,6 +238,7 @@ void UploadQSODialog::saveDialogState()
     LogParam::setUploadeqslQTHProfile(ui->eqslQTHProfileEdit->text());
     LogParam::setUploadQSOFilterType(ui->myCallsignCheckbox->isChecked() ? 0 : 1);
     LogParam::setCloudlogStationID(ui->wavelogStationIDSpin->value());
+    LogParam::setUploadLoTWLocation(ui->lotwLocationCombo->currentData().toString());
 }
 
 void UploadQSODialog::processNextUploader()
@@ -351,6 +386,13 @@ void UploadQSODialog::processNextUploader()
     // Special params for selected services
     switch ( currentTask.getServiceID() )
     {
+    case LOTWID:
+    {
+        // Pass the selected TQSL location as -l argument; index 0 = let TQSL choose
+        if ( ui->lotwLocationCombo->currentIndex() > 0)
+            uploadConfig = LotwUploader::generateUploadConfigMap(ui->lotwLocationCombo->currentData().toString());
+        break;
+    }
     case EQSLID:
         uploadConfig = EQSLUploader::generateUploadConfigMap(ui->eqslQTHProfileEdit->text(),
                                                              ui->eqslQSLNone->isChecked(),
@@ -618,6 +660,7 @@ void UploadQSODialog::executeQuery()
     ui->detailQSOView->setModel(detailQSOsModel);
     ui->detailQSOView->resizeColumnsToContents();
     updateQSONumbers();
+    updateLotwLocationWarning();
     qCDebug(runtime) << "finiched";
 }
 
@@ -628,10 +671,86 @@ void UploadQSODialog::handleCallsignChange(const QString &myCallsign)
     ui->myGridLabel->blockSignals(true);
     ui->myGridCombo->setModel(new SqlListModel("SELECT DISTINCT UPPER(my_gridsquare) "
                                                "FROM contacts "
-                                               "WHERE COALESCE(NULLIF(TRIM(station_callsign), ''), TRIM(operator)) ='" + myCallsign + "' ORDER BY my_gridsquare", tr("Any"), ui->myGridCombo));
+                                               "WHERE COALESCE(NULLIF(TRIM(station_callsign), ''), TRIM(operator)) ='" + QString(myCallsign).replace("'", "''") + "' ORDER BY my_gridsquare", tr("Any"), ui->myGridCombo));
     ui->myGridCombo->setCurrentIndex(0);
     executeQuery();
     ui->myGridLabel->blockSignals(false);
+    updateLotwLocationWarning();
+}
+
+void UploadQSODialog::updateLotwLocationWarning()
+{
+    FCT_IDENTIFICATION;
+
+    // selected "Unspecified" – nothing to validate
+    if ( ui->lotwLocationCombo->currentIndex() <= 0 )
+    {
+        ui->lotwLocationWarningLabel->setVisible(false);
+        return;
+    }
+
+    QString filterCallsign;
+    QString filterGrid;
+    bool checkGrid = false;
+
+    if ( ui->myCallsignCheckbox->isChecked() )
+    {
+        filterCallsign = ui->myCallsignCombo->currentText().toUpper().trimmed();
+        // myGridCombo index 0 means "Any" – skip the grid check in that case
+        checkGrid = ui->myGridCombo->currentIndex() > 0;
+        if ( checkGrid )
+            filterGrid = ui->myGridCombo->currentText().toUpper().trimmed();
+    }
+    else
+    {
+        // Station Profile mode
+        const StationProfile &profile = StationProfilesManager::instance()->getProfile(ui->myStationProfileCombo->currentText());
+        filterCallsign = profile.callsign.toUpper().trimmed();
+        checkGrid = !profile.locator.trimmed().isEmpty();
+        if ( checkGrid )
+            filterGrid = profile.locator.toUpper().trimmed();
+    }
+
+    const QString selectedName = ui->lotwLocationCombo->currentData().toString();
+
+    for ( const TQSLStationLocation &loc : static_cast<const QList<TQSLStationLocation>>(tqslLocations) )
+    {
+        if ( loc.name != selectedName )
+            continue;
+
+        const bool callsignMismatch = !loc.callsign.isEmpty()
+                                      && !filterCallsign.isEmpty()
+                                      && loc.callsign.toUpper() != filterCallsign;
+
+        // Compare only the 4-character grid square prefix
+        const bool gridMismatch = checkGrid
+                                  && !loc.grid.isEmpty()
+                                  && loc.grid.toUpper().left(4) != filterGrid.left(4);
+
+        if ( callsignMismatch && gridMismatch )
+        {
+            ui->lotwLocationWarningLabel->setText(
+                QString("⚠ ") + tr("Location callsign (%1) and grid (%2) do not match selected filters")
+                                .arg(loc.callsign, loc.grid.toUpper()));
+        }
+        else if ( callsignMismatch )
+        {
+            ui->lotwLocationWarningLabel->setText(
+                QString("⚠ ") + tr("Location callsign (%1) does not match selected callsign (%2)")
+                                .arg(loc.callsign, filterCallsign));
+        }
+        else if ( gridMismatch )
+        {
+            ui->lotwLocationWarningLabel->setText(
+                QString("⚠ ") + tr("Location grid (%1) does not match selected grid (%2)")
+                                .arg(loc.grid.toUpper(), filterGrid));
+        }
+
+        ui->lotwLocationWarningLabel->setVisible(callsignMismatch || gridMismatch);
+        return;
+    }
+
+    ui->lotwLocationWarningLabel->setVisible(false);
 }
 
 void UploadQSODialog::updateWavelogStationLabel()

@@ -169,5 +169,9 @@
   "FT4": { "mode": "MFSK", "submode": "FT4" },
   "FST4": { "mode": "MFSK", "submode": "FST4"},
   "FST4W": { "mode": "MFSK", "submode": "FST4W"},
-  "Q65": { "mode": "MFSK", "submode": "Q65"}
+  "Q65": { "mode": "MFSK", "submode": "Q65"},
+  "FT2": { "mode": "MFSK", "submode": "FT2" },
+  "RIBBIT_PIX": { "mode": "OFDM", "submode": "RIBBIT_PIX" },
+  "RIBBIT_SMS": { "mode": "OFDM", "submode": "RIBBIT_SMS" },
+  "FREEDATA": { "mode": "DYNAMIC", "submode": "FREEDATA" }
 }

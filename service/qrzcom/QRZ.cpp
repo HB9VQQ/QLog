@@ -21,6 +21,8 @@ const QString QRZBase::SECURE_STORAGE_API_KEY = "QRZCOMAPI";
 const QString QRZBase::CONFIG_USERNAME_API_CONST = "logbookapi";
 const QString QRZCallbook::CALLBOOK_NAME = "qrzcom";
 
+REGISTRATION_SECURE_SERVICE(QRZBase);
+
 const QString QRZBase::getUsername()
 {
     FCT_IDENTIFICATION;
@@ -28,12 +30,11 @@ const QString QRZBase::getUsername()
     return LogParam::getQRZCOMCallbookUsername();
 }
 
-const QString QRZBase::getPassword()
+const QString QRZBase::getPasswd(const QString &username)
 {
     FCT_IDENTIFICATION;
 
-    return CredentialStore::instance()->getPassword(QRZBase::SECURE_STORAGE_KEY,
-                                                    getUsername());
+    return getPassword(QRZBase::SECURE_STORAGE_KEY, username);
 }
 
 void QRZBase::saveUsernamePassword(const QString &newUsername, const QString &newPassword)
@@ -43,39 +44,38 @@ void QRZBase::saveUsernamePassword(const QString &newUsername, const QString &ne
     const QString &oldUsername = getUsername();
     if ( oldUsername != newUsername )
     {
-        CredentialStore::instance()->deletePassword(QRZBase::SECURE_STORAGE_KEY,
-                                                    oldUsername);
+        deletePassword(QRZBase::SECURE_STORAGE_KEY, oldUsername);
     }
 
     LogParam::setQRZCOMCallbookUsername(newUsername);
 
-    CredentialStore::instance()->savePassword(QRZBase::SECURE_STORAGE_KEY,
-                                              newUsername,
-                                              newPassword);
+    savePassword(QRZBase::SECURE_STORAGE_KEY,
+                 newUsername, newPassword);
 }
 
-const QString QRZBase::getLogbookAPIKey(const QString &internalUsername)
+QString QRZBase::getInternalAPIUsername()
 {
     FCT_IDENTIFICATION;
 
-    return CredentialStore::instance()->getPassword(QRZBase::SECURE_STORAGE_API_KEY,
-                                                    internalUsername);
+    return QRZBase::CONFIG_USERNAME_API_CONST;
 }
 
-
-void QRZBase::saveLogbookAPIKey(const QString &newKey, const QString &internalUsername)
+const QString QRZBase::getLogbookAPIKey(const QString &username)
 {
     FCT_IDENTIFICATION;
 
-    CredentialStore::instance()->deletePassword(QRZBase::SECURE_STORAGE_API_KEY,
-                                                internalUsername);
+    return getPassword(QRZBase::SECURE_STORAGE_API_KEY, username);
+}
+
+
+void QRZBase::saveLogbookAPIKey(const QString &newKey, const QString &username)
+{
+    FCT_IDENTIFICATION;
+
+    deletePassword(QRZBase::SECURE_STORAGE_API_KEY, username);
 
     if ( ! newKey.isEmpty() )
-    {
-        CredentialStore::instance()->savePassword(QRZBase::SECURE_STORAGE_API_KEY,
-                                                  internalUsername,
-                                                  newKey);
-    }
+        savePassword(QRZBase::SECURE_STORAGE_API_KEY, username, newKey);
 }
 
 const QStringList QRZBase::getLogbookAPIAddlCallsigns()
@@ -90,6 +90,25 @@ void QRZBase::setLogbookAPIAddlCallsigns(const QStringList &list)
     FCT_IDENTIFICATION;
 
     LogParam::setQRZCOMAPICallsignsList(list);
+}
+
+void QRZBase::registerCredentials()
+{
+    // both storage keys belong to the same logical service
+    CredentialRegistry::instance().add(SECURE_STORAGE_API_KEY, []()
+    {
+        QList<CredentialDescriptor> ret;
+
+        ret.append({ SECURE_STORAGE_KEY, [](){ return getUsername(); }});
+        ret.append({ SECURE_STORAGE_API_KEY, [](){ return getInternalAPIUsername(); }});
+
+        const QStringList &addCallsigns = QRZBase::getLogbookAPIAddlCallsigns();
+
+        for ( QString callsign : addCallsigns ) // do not use referece callsign here.
+            ret.append({ SECURE_STORAGE_API_KEY, [callsign]() {return callsign;}});
+
+        return ret;
+    });
 }
 
 QRZCallbook::QRZCallbook(QObject* parent) :
@@ -174,7 +193,7 @@ void QRZCallbook::authenticate()
     FCT_IDENTIFICATION;
 
     const QString &username = getUsername();
-    const QString &password = getPassword();
+    const QString &password = getPasswd(username);
 
     if ( incorrectLogin && password == lastSeenPassword)
     {
@@ -375,7 +394,7 @@ void QRZUploader::uploadContact(const QSqlRecord &record)
     qCDebug(runtime) << "Using station Callsign" << stationCallsign;
 
     const QString &logbookAPIKey = (addlCallsign.contains(stationCallsign)) ? getLogbookAPIKey(stationCallsign)
-                                                                            : getLogbookAPIKey();
+                                                                            : getLogbookAPIKey(getInternalAPIUsername());
     actionInsert(logbookAPIKey, data, "REPLACE");
     currentReply->setProperty("contactID", record.value("id"));
 }

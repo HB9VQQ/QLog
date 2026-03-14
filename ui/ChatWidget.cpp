@@ -156,7 +156,7 @@ void ChatWidget::connectChat()
     FCT_IDENTIFICATION;
 
     QString username = KSTChat::getUsername();
-    QString password = KSTChat::getPassword();
+    QString password = KSTChat::getPasswd();
 
     if ( username.isEmpty()
          || password.isEmpty() )

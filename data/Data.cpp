@@ -1,6 +1,7 @@
 #include <QJsonDocument>
 #include <QSqlQuery>
 #include <QSqlError>
+#include <QCompleter>
 #include <QColor>
 #include "Data.h"
 #include "data/Callsign.h"
@@ -178,11 +179,17 @@ DxccStatus Data::dxccStatus(int dxcc, const QString &band, const QString &mode)
     if ( statusFromCache )
         return *statusFromCache;
 
+    // FTx modes (FT8, FT4, FT2) are stored in contacts with modes.dxcc = 'DIGITAL',
+    // so we use DIGITAL as the effective mode group when querying for FTx.
+    const QString modeForQuery = ( mode == BandPlan::MODE_GROUP_STRING_FTx )
+                                 ? BandPlan::MODE_GROUP_STRING_DIGITAL
+                                 : mode;
+
     QString sql_mode(":mode");
 
-    if ( mode != BandPlan::MODE_GROUP_STRING_CW
-         && mode != BandPlan::MODE_GROUP_STRING_PHONE
-         && mode != BandPlan::MODE_GROUP_STRING_DIGITAL )
+    if ( modeForQuery != BandPlan::MODE_GROUP_STRING_CW
+         && modeForQuery != BandPlan::MODE_GROUP_STRING_PHONE
+         && modeForQuery != BandPlan::MODE_GROUP_STRING_DIGITAL )
     {
         sql_mode = "(SELECT modes.dxcc FROM modes WHERE modes.name = :mode LIMIT 1) ";
     }
@@ -228,7 +235,7 @@ DxccStatus Data::dxccStatus(int dxcc, const QString &band, const QString &mode)
 
     query.bindValue(":dxcc", dxcc);
     query.bindValue(":band", band);
-    query.bindValue(":mode", mode);
+    query.bindValue(":mode", modeForQuery);
 
     if ( ! query.exec() )
     {
@@ -612,14 +619,6 @@ int Data::getCQZMax()
     return 40;
 }
 
-QString Data::dbFilename()
-{
-    FCT_IDENTIFICATION;
-
-    QDir dir(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation));
-    return dir.filePath("qlog.db");
-}
-
 QString Data::debugFilename()
 {
     QDir dir(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation));
@@ -765,11 +764,16 @@ qulonglong Data::countDupe(const QString &callsign,
     if ( dupeType >= DupeType::EACH_BAND)
         whereClause << QLatin1String("band = :band");
 
+    // FTx modes are stored with modes.dxcc = 'DIGITAL', so map FTx to DIGITAL.
+    const QString modeForQuery = ( mode == BandPlan::MODE_GROUP_STRING_FTx )
+                                 ? BandPlan::MODE_GROUP_STRING_DIGITAL
+                                 : mode;
+
     if ( dupeType >= DupeType::EACH_BAND_MODE )
     {
-        QString sql_mode = (mode != BandPlan::MODE_GROUP_STRING_CW &&
-                            mode != BandPlan::MODE_GROUP_STRING_PHONE &&
-                            mode != BandPlan::MODE_GROUP_STRING_DIGITAL)
+        QString sql_mode = (modeForQuery != BandPlan::MODE_GROUP_STRING_CW &&
+                            modeForQuery != BandPlan::MODE_GROUP_STRING_PHONE &&
+                            modeForQuery != BandPlan::MODE_GROUP_STRING_DIGITAL)
                             ? "(SELECT modes.dxcc FROM modes WHERE modes.name = :mode LIMIT 1)"
                             : ":mode";
         whereClause << QString("m.dxcc = %1").arg(sql_mode);
@@ -791,7 +795,7 @@ qulonglong Data::countDupe(const QString &callsign,
     query.bindValue(":callsign", callsign);
     query.bindValue(":date", dupeStartTime);
     query.bindValue(":band", band);
-    query.bindValue(":mode", mode);
+    query.bindValue(":mode", modeForQuery);
     query.bindValue(":contestid", contestID);
 
     if ( ! query.exec() )
@@ -969,6 +973,41 @@ void Data::loadPOTA()
         const QString &reference = query.value(0).toString();
         potaRefID.insert(reference, QString());
     }
+}
+
+QCompleter* Data::createCountyCompleter(int dxcc, QObject *parent)
+{
+    FCT_IDENTIFICATION;
+
+    QSqlQuery query;
+
+    if ( dxcc != 0 )
+    {
+        query.prepare("SELECT code FROM adif_enum_secondary_subdivision "
+                      "WHERE dxcc = :dxcc ORDER BY code");
+        query.bindValue(":dxcc", dxcc);
+    }
+    else
+        query.prepare("SELECT code FROM adif_enum_secondary_subdivision ORDER BY code");
+
+    if ( !query.exec() )
+    {
+        qCWarning(runtime) << query.lastError().text();
+        return nullptr;
+    }
+
+    QStringList list;
+    while ( query.next() )
+        list << query.value(0).toString();
+
+    if ( list.isEmpty() )
+        return nullptr;
+
+    QCompleter *completer = new QCompleter(list, parent);
+    completer->setCaseSensitivity(Qt::CaseInsensitive);
+    completer->setFilterMode(Qt::MatchStartsWith);
+    completer->setModelSorting(QCompleter::CaseSensitivelySortedModel);
+    return completer;
 }
 
 void Data::loadTZ()

@@ -47,6 +47,12 @@ AwardsDialog::AwardsDialog(QWidget *parent) :
     ui->awardComboBox->addItem(tr("Gridsquare 2-Chars"), QVariant("grid2"));
     ui->awardComboBox->addItem(tr("Gridsquare 4-Chars"), QVariant("grid4"));
     ui->awardComboBox->addItem(tr("Gridsquare 6-Chars"), QVariant("grid6"));
+    ui->awardComboBox->addItem(tr("US Counties"),             QVariant("uscounty"));
+    ui->awardComboBox->addItem(tr("Russian Districts"),        QVariant("rda"));
+    ui->awardComboBox->addItem(tr("Japanese Cities/Ku/Guns"),  QVariant("japan"));
+    ui->awardComboBox->addItem(tr("NZ Counties"),              QVariant("nz"));
+    ui->awardComboBox->addItem(tr("Spanish DMEs"),             QVariant("spanishdme"));
+    ui->awardComboBox->addItem(tr("Ukrainian Districts"),      QVariant("ukd"));
     ui->awardComboBox->blockSignals(false);
 
     ui->buttonBox->button(QDialogButtonBox::Ok)->setText(tr("Done"));
@@ -354,6 +360,90 @@ void AwardsDialog::refreshTable(int)
                           "     INNER JOIN source_contacts c ON c.wwff_ref = w.reference "
                           "     INNER JOIN modes m on c.mode = m.name ";
     }
+    else if ( awardSelected == "uscounty" )
+    {
+        setEntityInputEnabled(false);
+        setNotWorkedEnabled(true);
+        headersColumns = "d.subdivision_name col1, d.code col2 ";
+        sqlPartDetailTable =
+            " FROM adif_enum_secondary_subdivision d "
+            "   LEFT OUTER JOIN (SELECT * FROM source_contacts "
+            "                    WHERE dxcc IN (291, 6, 110) "
+            "                      AND cnty IS NOT NULL AND cnty != '') c "
+            "     ON d.dxcc = c.dxcc AND upper(d.code) = upper(c.cnty) "
+            "   LEFT OUTER JOIN modes m ON c.mode = m.name "
+            " WHERE d.dxcc IN (291, 6, 110) ";
+    }
+    else if ( awardSelected == "rda" )
+    {
+        setEntityInputEnabled(false);
+        setNotWorkedEnabled(true);
+        headersColumns = "d.subdivision_name col1, d.code col2 ";
+        sqlPartDetailTable =
+            " FROM adif_enum_secondary_subdivision d "
+            "   LEFT OUTER JOIN (SELECT * FROM source_contacts "
+            "                    WHERE dxcc IN (15, 54, 61, 126, 151) "
+            "                      AND cnty IS NOT NULL AND cnty != '') c "
+            "     ON d.dxcc = c.dxcc AND upper(d.code) = upper(c.cnty) "
+            "   LEFT OUTER JOIN modes m ON c.mode = m.name "
+            " WHERE d.dxcc IN (15, 54, 61, 126, 151) ";
+    }
+    else if ( awardSelected == "japan" )
+    {
+        setEntityInputEnabled(false);
+        setNotWorkedEnabled(true);
+        headersColumns = "d.subdivision_name col1, d.code col2 ";
+        sqlPartDetailTable =
+            " FROM adif_enum_secondary_subdivision d "
+            "   LEFT OUTER JOIN (SELECT * FROM source_contacts "
+            "                    WHERE dxcc = 339 "
+            "                      AND cnty IS NOT NULL AND cnty != '') c "
+            "     ON d.dxcc = c.dxcc AND upper(d.code) = upper(c.cnty) "
+            "   LEFT OUTER JOIN modes m ON c.mode = m.name "
+            " WHERE d.dxcc = 339 ";
+    }
+    else if ( awardSelected == "nz" )
+    {
+        setEntityInputEnabled(false);
+        setNotWorkedEnabled(true);
+        headersColumns = "d.subdivision_name col1, d.code col2 ";
+        sqlPartDetailTable =
+            " FROM adif_enum_secondary_subdivision d "
+            "   LEFT OUTER JOIN (SELECT * FROM source_contacts "
+            "                    WHERE dxcc = 170 "
+            "                      AND cnty IS NOT NULL AND cnty != '') c "
+            "     ON d.dxcc = c.dxcc AND upper(d.code) = upper(c.cnty) "
+            "   LEFT OUTER JOIN modes m ON c.mode = m.name "
+            " WHERE d.dxcc = 170 ";
+    }
+    else if ( awardSelected == "spanishdme" )
+    {
+        setEntityInputEnabled(false);
+        setNotWorkedEnabled(true);
+        headersColumns = "d.subdivision_name col1, d.code col2 ";
+        sqlPartDetailTable =
+            " FROM adif_enum_secondary_subdivision d "
+            "   LEFT OUTER JOIN (SELECT * FROM source_contacts "
+            "                    WHERE dxcc IN (21, 29, 32, 281) "
+            "                      AND cnty IS NOT NULL AND cnty != '') c "
+            "     ON d.dxcc = c.dxcc AND upper(d.code) = upper(c.cnty) "
+            "   LEFT OUTER JOIN modes m ON c.mode = m.name "
+            " WHERE d.dxcc IN (21, 29, 32, 281) ";
+    }
+    else if ( awardSelected == "ukd" )
+    {
+        setEntityInputEnabled(false);
+        setNotWorkedEnabled(true);
+        headersColumns = "d.subdivision_name col1, d.code col2 ";
+        sqlPartDetailTable =
+            " FROM adif_enum_secondary_subdivision d "
+            "   LEFT OUTER JOIN (SELECT * FROM source_contacts "
+            "                    WHERE dxcc = 288 "
+            "                      AND cnty IS NOT NULL AND cnty != '') c "
+            "     ON d.dxcc = c.dxcc AND upper(d.code) = upper(c.cnty) "
+            "   LEFT OUTER JOIN modes m ON c.mode = m.name "
+            " WHERE d.dxcc = 288 ";
+    }
 
     qCDebug(runtime) << "addWherePart" << addWherePart;
 
@@ -450,7 +540,7 @@ void AwardsDialog::awardTableDoubleClicked(QModelIndex idx)
     const QString &awardSelected = getSelectedAward();
     QStringList addlFilters;
 
-    if ( ui->myEntityComboBox->isEnabled() )
+    if ( ui->myEntityComboBox->isVisible() )
         addlFilters << QString("my_dxcc='%1'").arg(getSelectedEntity());
 
     if ( idx.row() > 3 )
@@ -468,9 +558,15 @@ void AwardsDialog::awardTableDoubleClicked(QModelIndex idx)
         else if ( awardSelected == "waz" )   addlFilters << QString("cqz = '%1'").arg(col1Value);
         else if ( awardSelected == "wpx" )   addlFilters << QString("pfx = '%1'").arg(col1Value);
         else if ( awardSelected == "potah" ) addlFilters << QString("pota_ref LIKE '%%1%'").arg(col1Value);
-        else if ( awardSelected == "potaa" ) addlFilters << QString("my_pota_ref LIKE = '%%1%'").arg(col1Value);
-        else if ( awardSelected == "sota" )  addlFilters << QString("sota_ref = '%1'").arg(col1Value);
-        else if ( awardSelected == "wwff" )  addlFilters << QString("wwff_ref = '%1'").arg(col1Value);
+        else if ( awardSelected == "potaa" ) addlFilters << QString("my_pota_ref LIKE '%%1%'").arg(col1Value);
+        else if ( awardSelected == "sota" )       addlFilters << QString("sota_ref = '%1'").arg(col1Value);
+        else if ( awardSelected == "wwff" )       addlFilters << QString("wwff_ref = '%1'").arg(col1Value);
+        else if ( awardSelected == "uscounty" )   addlFilters << QString("upper(cnty) = upper('%1') and dxcc in (291, 6, 110)").arg(col2Value);
+        else if ( awardSelected == "rda" )        addlFilters << QString("upper(cnty) = upper('%1') and dxcc in (15, 54, 61, 126, 151)").arg(col2Value);
+        else if ( awardSelected == "japan" )      addlFilters << QString("upper(cnty) = upper('%1') and dxcc = 339").arg(col2Value);
+        else if ( awardSelected == "nz" )         addlFilters << QString("upper(cnty) = upper('%1') and dxcc = 170").arg(col2Value);
+        else if ( awardSelected == "spanishdme" ) addlFilters << QString("upper(cnty) = upper('%1') and dxcc in (21, 29, 32, 281)").arg(col2Value);
+        else if ( awardSelected == "ukd" )        addlFilters << QString("upper(cnty) = upper('%1') and dxcc = 288").arg(col2Value);
 
         if ( idx.column() > 2 ) band = detailedViewModel->headerData( idx.column(), Qt::Horizontal ).toString();
 

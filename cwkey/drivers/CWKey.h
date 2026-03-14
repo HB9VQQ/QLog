@@ -2,6 +2,7 @@
 #define QLOG_CWKEY_DRIVERS_CWKEY_H
 
 #include <QObject>
+#include <QRegularExpression>
 #include <QtSerialPort>
 #include <QUdpSocket>
 
@@ -106,6 +107,10 @@ public:
     static CWKeyTypeID intToTypeID(int);
     static CWKeyModeID intToModeID(int);
     static bool isNetworkKey(const CWKeyTypeID &type);
+    static QString stripSpeedMarkers(const QString &text);
+
+    virtual qint16 minWPM() const { return 5; }
+    virtual qint16 maxWPM() const { return 99; }
 
     friend QDataStream& operator<<(QDataStream& out, const CWKeyTypeID& v);
     friend QDataStream& operator>>(QDataStream& in, CWKeyTypeID& v);
@@ -116,11 +121,17 @@ public:
 protected:
     CWKeyModeID keyMode;
     qint32 defaultWPMSpeed;
+    qint16 currentWPM;
 
     bool stopSendingCap;
     bool echoCharsCap;
     bool rigMustConnectedCap;
     bool canSetKeySpeed;
+
+    static const QRegularExpression &speedMarkerRE();
+    qint16 applySpeedMarker(const QString &markerCapture);
+
+
 };
 
 #endif // QLOG_CWKEY_DRIVERS_CWKEY_H

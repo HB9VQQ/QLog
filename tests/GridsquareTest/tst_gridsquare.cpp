@@ -235,8 +235,11 @@ void GridsquareTest::gridToLatLon()
 
     const Gridsquare gs(grid);
     QVERIFY(gs.isValid());
-    QCOMPARE(qRound(gs.getLatitude()), expectedLatitude);
-    QCOMPARE(qRound(gs.getLongitude()), expectedLongitude);
+    // Use floor(d + 0.5) instead of qRound() to get consistent "round half up"
+    // behaviour across platforms. qRound() for negative half-integers (e.g. -88.5)
+    // produces different results on MSVC vs GCC due to floating-point precision.
+    QCOMPARE(static_cast<int>(std::floor(gs.getLatitude()  + 0.5)), expectedLatitude);
+    QCOMPARE(static_cast<int>(std::floor(gs.getLongitude() + 0.5)), expectedLongitude);
 }
 
 void GridsquareTest::gridToLatLon_invalid_data()

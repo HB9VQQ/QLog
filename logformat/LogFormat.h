@@ -65,6 +65,7 @@ public:
     void setFilterMyGridsquare(const QString &myGridsquare);
     void setFilterSentPaperQSL(bool includeNo, bool includeIgnore, bool includeAlreadySent);
     void setFilterSendVia(const QString &value);
+    void setFilterStationProfile(const StationProfile &profile);
     void setUserFilter(const QString&value);
     void setPotaOnly(bool only);
     QString getWhereClause();
@@ -119,6 +120,8 @@ private:
     QString filterMyGridsquare;
     QStringList filterSentPaperQSL;
     QString filterSendVia;
+    StationProfile filterStationProfile;
+    bool filterStationProfileSet = false;
     QStringList whereClause;
     QStringList exportedFields;
     QString userFilter;

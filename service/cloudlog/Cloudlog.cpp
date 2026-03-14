@@ -8,7 +8,6 @@
 
 #include "Cloudlog.h"
 #include "core/debug.h"
-#include "core/CredentialStore.h"
 #include "core/LogParam.h"
 #include "logformat/AdiFormat.h"
 
@@ -16,27 +15,25 @@ MODULE_IDENTIFICATION("qlog.core.cloudlog");
 
 const QString CloudlogBase::SECURE_STORAGE_API_KEY = "Cloudlog";
 const QString CloudlogBase::CONFIG_USERNAME_API_CONST = "logbookapi";
+REGISTRATION_SECURE_SERVICE(CloudlogBase);
 
-
-QString CloudlogBase::getLogbookAPIKey(const QString &internalUsername)
+QString CloudlogBase::getLogbookAPIKey()
 {
     FCT_IDENTIFICATION;
 
-    return CredentialStore::instance()->getPassword(CloudlogBase::SECURE_STORAGE_API_KEY,
-                                                    internalUsername);
+    return getPassword(SECURE_STORAGE_API_KEY, getUsername());
 }
 
-void CloudlogBase::saveLogbookAPIKey(const QString &newKey, const QString &internalUsername)
+void CloudlogBase::saveLogbookAPIKey(const QString &newKey)
 {
     FCT_IDENTIFICATION;
 
-    CredentialStore::instance()->deletePassword(CloudlogBase::SECURE_STORAGE_API_KEY,
-                                                internalUsername);
+    deletePassword(CloudlogBase::SECURE_STORAGE_API_KEY, getUsername());
+
     if ( newKey.isEmpty() ) return;
 
-    CredentialStore::instance()->savePassword(CloudlogBase::SECURE_STORAGE_API_KEY,
-                                              internalUsername,
-                                              newKey);
+    savePassword(CloudlogBase::SECURE_STORAGE_API_KEY,
+                 getUsername(), newKey);
 }
 
 QString CloudlogBase::getAPIEndpoint()
@@ -51,6 +48,18 @@ void CloudlogBase::setAPIEndpoint(const QString &endpoint)
     FCT_IDENTIFICATION;
 
     LogParam::setCloudlogAPIEndpoint(endpoint);
+}
+
+void CloudlogBase::registerCredentials()
+{
+    // both storage keys belong to the same logical service
+    CredentialRegistry::instance().add(SECURE_STORAGE_API_KEY, []()
+    {
+        return QList<CredentialDescriptor>
+        {
+            { SECURE_STORAGE_API_KEY, [](){ return getUsername(); } }
+        };
+    });
 }
 
 CloudlogUploader::CloudlogUploader(QObject *parent) :

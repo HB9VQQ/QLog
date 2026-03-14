@@ -14,6 +14,7 @@ MODULE_IDENTIFICATION("qlog.core.hamqth");
 
 const QString HamQTHBase::SECURE_STORAGE_KEY = "HamQTH";
 const QString HamQTHCallbook::CALLBOOK_NAME = "hamqth";
+REGISTRATION_SECURE_SERVICE(HamQTHBase);
 
 const QString HamQTHBase::getUsername()
 {
@@ -22,12 +23,11 @@ const QString HamQTHBase::getUsername()
     return LogParam::getHamQTHCallbookUsername();
 }
 
-const QString HamQTHBase::getPassword()
+const QString HamQTHBase::getPasswd()
 {
     FCT_IDENTIFICATION;
 
-    return CredentialStore::instance()->getPassword(HamQTHBase::SECURE_STORAGE_KEY,
-                                                   getUsername());
+    return getPassword(HamQTHBase::SECURE_STORAGE_KEY, getUsername());
 }
 
 void HamQTHBase::saveUsernamePassword(const QString &newUsername, const QString &newPassword)
@@ -37,15 +37,25 @@ void HamQTHBase::saveUsernamePassword(const QString &newUsername, const QString 
     QString oldUsername = getUsername();
     if ( oldUsername != newUsername )
     {
-        CredentialStore::instance()->deletePassword(HamQTHBase::SECURE_STORAGE_KEY,
-                                                    oldUsername);
+        deletePassword(HamQTHBase::SECURE_STORAGE_KEY, oldUsername);
     }
 
     LogParam::setHamQTHCallbookUsername(newUsername);
 
-    CredentialStore::instance()->savePassword(HamQTHBase::SECURE_STORAGE_KEY,
-                                              newUsername,
-                                              newPassword);
+    savePassword(HamQTHBase::SECURE_STORAGE_KEY,
+                 newUsername, newPassword);
+}
+
+void HamQTHBase::registerCredentials()
+{
+    // both storage keys belong to the same logical service
+    CredentialRegistry::instance().add(SECURE_STORAGE_KEY, []()
+    {
+        return QList<CredentialDescriptor>
+        {
+            { SECURE_STORAGE_KEY, [](){ return getUsername(); } }
+        };
+    });
 }
 
 HamQTHCallbook::HamQTHCallbook(QObject* parent) :
@@ -118,7 +128,7 @@ void HamQTHCallbook::authenticate()
     FCT_IDENTIFICATION;
 
     const QString &username = getUsername();
-    const QString &password = getPassword();
+    const QString &password = getPasswd();
 
     if ( incorrectLogin && password == lastSeenPassword)
     {

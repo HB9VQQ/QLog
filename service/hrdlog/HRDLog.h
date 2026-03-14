@@ -4,25 +4,28 @@
 #include <QObject>
 #include <QSqlRecord>
 #include "service/GenericQSOUploader.h"
+#include "core/CredentialStore.h"
 
 class QNetworkReply;
 class QNetworkAccessManager;
 
 
-class HRDLogBase
+class HRDLogBase : public SecureServiceBase<HRDLogBase>
 {
+protected:
+    const static QString SECURE_STORAGE_KEY;
+
 public:
     explicit HRDLogBase() {};
     virtual ~HRDLogBase() {};
+
+    DECLARE_SECURE_SERVICE(HRDLogBase);
 
     static const QString getRegisteredCallsign();
     static const QString getUploadCode();
     static bool getOnAirEnabled();
     static void saveUploadCode(const QString &newUsername, const QString &newPassword);
     static void saveOnAirEnabled(bool state);
-
-protected:
-    const static QString SECURE_STORAGE_KEY;
 };
 
 class HRDLogUploader : public GenericQSOUploader, private HRDLogBase

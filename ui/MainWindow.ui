@@ -61,6 +61,9 @@
     </property>
     <addaction name="actionSettings"/>
     <addaction name="separator"/>
+    <addaction name="actionDumpDB"/>
+    <addaction name="actionLoadDB"/>
+    <addaction name="separator"/>
     <addaction name="actionQuit"/>
    </widget>
    <widget class="QMenu" name="menuLogbook">
@@ -75,6 +78,8 @@
     <addaction name="separator"/>
     <addaction name="actionAwards"/>
     <addaction name="actionStatistics"/>
+    <addaction name="separator"/>
+    <addaction name="actionQSLGallery"/>
    </widget>
    <widget class="QMenu" name="menuEquipment">
     <property name="title">
@@ -349,6 +354,16 @@
     <enum>QAction::PreferencesRole</enum>
    </property>
   </action>
+  <action name="actionDumpDB">
+   <property name="text">
+    <string>Pack Data &amp;&amp; Settings</string>
+   </property>
+  </action>
+  <action name="actionLoadDB">
+   <property name="text">
+    <string>Unpack Data &amp;&amp; Settings</string>
+   </property>
+  </action>
   <action name="actionNewContact">
    <property name="icon">
     <iconset theme="document-new">
@@ -451,6 +466,11 @@
    </property>
    <property name="text">
     <string>S&amp;tatistics</string>
+   </property>
+  </action>
+  <action name="actionQSLGallery">
+   <property name="text">
+    <string>QSL &amp;Gallery</string>
    </property>
   </action>
   <action name="actionWsjtx">
@@ -1071,6 +1091,38 @@
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
    <slot>showSettings()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>317</x>
+     <y>231</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionDumpDB</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>showDumpDB()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>317</x>
+     <y>231</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionLoadDB</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>showLoadDB()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1706,6 +1758,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionQSLGallery</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>showQSLGallery()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>456</x>
+     <y>278</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <signal>settingsChanged()</signal>
@@ -1736,5 +1804,8 @@
   <slot>showServiceDownloadQSL()</slot>
   <slot>showServiceUpload()</slot>
   <slot>showWhatsNew()</slot>
+  <slot>showDumpDB()</slot>
+  <slot>showLoadDB()</slot>
+  <slot>showQSLGallery()</slot>
  </slots>
 </ui>

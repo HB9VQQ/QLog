@@ -77,6 +77,9 @@ private slots:
     void showEditLayout();
     void showServiceUpload();
     void showServiceDownloadQSL();
+    void showDumpDB();
+    void showLoadDB();
+    void showQSLGallery();
 
     void saveProfileLayoutGeometry();
     void setEquipmentKeepOptions(bool);
@@ -138,6 +141,8 @@ private:
     void setDarkTheme();
 
     void showEvent(QShowEvent *event) override;
+
+    void restartApplication();
 };
 
 #endif // QLOG_UI_MAINWINDOW_H
