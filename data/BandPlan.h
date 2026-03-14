@@ -16,7 +16,6 @@ public:
     static const QString MODE_GROUP_STRING_PHONE;
     static const QString MODE_GROUP_STRING_FTx;
     static bool isFTxMode(const QString &mode);
-    static bool isFTxBandMode(const BandPlanMode &mode);
 
     enum BandPlanMode
     {
@@ -32,6 +31,7 @@ public:
     };
 
     static BandPlanMode freq2BandMode(const double freq);
+    static bool isFTxBandMode(const BandPlanMode &mode);
     static const QString bandMode2BandModeGroupString(const BandPlan::BandPlanMode &bandPlanMode);
     static const QString freq2BandModeGroupString(const double freq);
     static const QString bandPlanMode2ExpectedMode(const BandPlan::BandPlanMode &bandPlanMode,
