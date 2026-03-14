@@ -19,7 +19,7 @@ MODULE_IDENTIFICATION("qlog.core.migration");
  * Migrate the database to the latest schema version.
  * Returns true on success.
  */
-bool Migration::run() {
+bool Migration::run(bool force) {
     FCT_IDENTIFICATION;
 
     int currentVersion = getVersion();
@@ -38,7 +38,7 @@ bool Migration::run() {
     }
 
     qCDebug(runtime) << "Backup before migration";
-    backupDatabase(true);
+    backupDatabase(force);
 
     qCDebug(runtime) << "Starting database migration";
 

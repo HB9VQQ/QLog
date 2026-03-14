@@ -14,8 +14,9 @@ class Migration : public QObject
 
 public:
     Migration(QObject *parent = nullptr) : QObject(parent) {}
-    bool run();
+    bool run(bool force = false);
     static bool backupDatabase(bool force = false);
+    static const int latestVersion = 36;
 
 private:
     bool functionMigration(int version);
@@ -43,7 +44,8 @@ private:
     QString fixIntlField(QSqlQuery &query, const QString &columName, const QString &columnNameIntl);
     bool refreshUploadStatusTrigger();
 
-    static const int latestVersion = 36;
+
+
 
     friend class MigrationSqlTest_FriendAccessor;
 };
