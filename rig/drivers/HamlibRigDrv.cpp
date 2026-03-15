@@ -1113,7 +1113,7 @@ const QString HamlibRigDrv::getModeNormalizedText(const rmode_t mode,
     case RIG_MODE_CWR: return "CW";
     case RIG_MODE_RTTYR: return "RTTY";
     case RIG_MODE_AMS: return "AM";
-    case RIG_MODE_PKTLSB: {submode = "LSB"; return "SSB";}
+    case RIG_MODE_PKTLSB: { if (isSmartSDRSlice(rig->caps)) return "RTTY"; submode = "LSB"; return "SSB";}
     case RIG_MODE_PKTUSB: {submode = "USB"; return "SSB";}
     case RIG_MODE_PKTFM: return "FM";
     case RIG_MODE_ECSSUSB: {submode = "USB"; return "SSB";}
