@@ -2056,6 +2056,9 @@ void DxWidget::processDxSpot(const QString &spotter,
                                                 : BandPlan::BAND_MODE_USB;
     }
     spot.modeGroupString = BandPlan::bandMode2BandModeGroupString(spot.bandPlanMode);
+    // HB9VQQ: override mode to RTTY if comment explicitly indicates it
+    if (QRegularExpression("\\bRTTY?\\b", QRegularExpression::CaseInsensitiveOption).match(spot.comment).hasMatch())
+        spot.modeGroupString = "RTTY";
     spot.dxcc = Data::instance()->lookupDxcc(call);
     spot.dxcc_spotter = Data::instance()->lookupDxcc(spotter);
     spot.status = Data::instance()->dxccStatus(spot.dxcc.dxcc, spot.band, spot.modeGroupString);
