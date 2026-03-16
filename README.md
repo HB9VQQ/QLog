@@ -30,6 +30,12 @@ This edition adds features for the serious DXer — reliable mode filtering, pro
 - Solves the Spiderbeam Yagi + 40m add-on dipole problem: the dipole radiates broadside (perpendicular to boom) while Yagi elements radiate end-fire, requiring a −90° offset on 40m
 - When QLog sends a rotor command, it applies the per-band offset if defined, otherwise the global offset
 
+**FlexRadio RTTY Mode Fix** — correct mode logging when using a FlexRadio 6xxx via Hamlib:
+
+- Hamlib reports `PKTLSB` for RTTY mode on FlexRadio rigs, causing QLog to display and log QSOs as SSB/LSB
+- This edition maps `PKTLSB` to `RTTY` automatically when a FlexRadio rig is detected
+- DIGU/PKTUSB continues to log as SSB as expected
+
 **Satellite/Dark Map Tiles** — replaces the default OpenStreetMap tiles with Esri imagery:
 
 - Three base layers via layer control: Satellite (Esri World Imagery + labels), Dark (Esri Dark Gray Canvas), and OpenStreetMap
@@ -76,4 +82,3 @@ This is a personal project. I don't have the time or resources to test every pos
 If something doesn't work, you're welcome to open an [issue](https://github.com/HB9VQQ/QLog/issues), but please understand that this fork is provided as-is. For issues related to core QLog functionality (not the features listed above), please report them to the [upstream project](https://github.com/foldynl/QLog/issues) instead.
 
 *73 de Roland, HB9VQQ*
-
