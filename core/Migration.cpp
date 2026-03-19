@@ -274,8 +274,12 @@ bool Migration::runSqlFile(QString filename) {
         QSqlQuery query;
         if (!query.exec(sqlQuery))
         {
-            qCDebug(runtime) << query.lastError();
-            return false;
+            // HB9VQQ: ignore duplicate column errors (safe when upgrading from upstream)
+            if (!query.lastError().databaseText().contains("duplicate column", Qt::CaseInsensitive))
+            {
+                qCDebug(runtime) << query.lastError();
+                return false;
+            }
         }
         query.finish();
     }
