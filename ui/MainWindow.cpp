@@ -805,7 +805,7 @@ void MainWindow::checkNewVersion()
 #ifdef Q_OS_MAC
                 "aa5sh/QLog";
 #else
-                "foldynl/QLog";
+                "HB9VQQ/QLog";
 #endif
 
     const QUrl url("https://api.github.com/repos/" + repoName + "/releases/latest");
@@ -1929,14 +1929,14 @@ void MainWindow::showWhatsNew()
 {
     FCT_IDENTIFICATION;
 
-    QDesktopServices::openUrl(QString("https://github.com/foldynl/QLog/releases/tag/v%0").arg(VERSION));
+    QDesktopServices::openUrl(QString("https://github.com/HB9VQQ/QLog/releases/tag/v%0").arg(VERSION));
 }
 
 void MainWindow::showWikiHelp()
 {
     FCT_IDENTIFICATION;
 
-    QDesktopServices::openUrl(QString("https://github.com/foldynl/QLog/wiki"));
+    QDesktopServices::openUrl(QString("https://github.com/HB9VQQ/QLog/wiki"));
 }
 
 void MainWindow::showMailingList()
@@ -1949,7 +1949,7 @@ void MainWindow::showMailingList()
 void MainWindow::showReportBug()
 {
     FCT_IDENTIFICATION;
-    QDesktopServices::openUrl(QString("https://github.com/foldynl/QLog/blob/master/CONTRIBUTING.md#reporting-bugs"));
+    QDesktopServices::openUrl(QString("https://github.com/HB9VQQ/QLog/blob/master/CONTRIBUTING.md#reporting-bugs"));
 }
 
 void MainWindow::showAlerts()
