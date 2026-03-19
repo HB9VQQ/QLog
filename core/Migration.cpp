@@ -275,15 +275,22 @@ bool Migration::runSqlFile(QString filename) {
         QSqlQuery query;
         if (!query.exec(sqlQuery))
         {
-            // HB9VQQ: ignore duplicate column errors (safe when upgrading from upstream)
-            if (!query.lastError().databaseText().contains("duplicate column", Qt::CaseInsensitive))
+            // HB9VQQ: ignore errors that are safe when upgrading from upstream:
+            // - duplicate column (ALTER TABLE on existing column)
+            // - UNIQUE constraint failed (INSERT of already-existing row)
+            // - table already exists (CREATE TABLE without IF NOT EXISTS)
+            const QString &dbErr = query.lastError().databaseText();
+            const bool isSafeError = dbErr.contains("duplicate column", Qt::CaseInsensitive)
+                || dbErr.contains("UNIQUE constraint failed", Qt::CaseSensitive)
+                || dbErr.contains("already exists", Qt::CaseInsensitive);
+            if (!isSafeError)
             {
                 qWarning() << "HB9VQQ Migration SQL error:" << query.lastError().databaseText() << "query:" << sqlQuery.trimmed().left(200);
                 return false;
             }
             else
             {
-                qWarning() << "HB9VQQ Migration: ignoring duplicate column in:" << sqlQuery.trimmed().left(100);
+                qWarning() << "HB9VQQ Migration: ignoring safe constraint error in:" << sqlQuery.trimmed().left(100);
             }
         }
         query.finish();
