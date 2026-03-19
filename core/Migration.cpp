@@ -23,9 +23,10 @@ bool Migration::run(bool force) {
     FCT_IDENTIFICATION;
 
     int currentVersion = getVersion();
+    qWarning() << "HB9VQQ Migration: currentVersion=" << currentVersion << "latestVersion=" << latestVersion;
 
     if (currentVersion == latestVersion) {
-        qCDebug(runtime) << "Database schema already up to date";
+        qWarning() << "HB9VQQ Migration: schema up to date";
         updateExternalResource();
         // temporarily added to create a trigger without calling db migration
         //refreshUploadStatusTrigger();
@@ -230,7 +231,7 @@ bool Migration::setVersion(int version) {
 bool Migration::migrate(int toVersion) {
     FCT_IDENTIFICATION;
 
-    qCDebug(runtime) << "migrate to" << toVersion;
+    qWarning() << "HB9VQQ Migration: migrating to version" << toVersion;
 
     QSqlDatabase db = QSqlDatabase::database();
     if (!db.transaction()) {
@@ -257,7 +258,7 @@ bool Migration::migrate(int toVersion) {
 bool Migration::runSqlFile(QString filename) {
     FCT_IDENTIFICATION;
 
-    qCDebug(function_parameters) << filename;
+    qWarning() << "HB9VQQ Migration: running SQL file" << filename;
 
     QFile sqlFile(filename);
     sqlFile.open(QIODevice::ReadOnly | QIODevice::Text);
@@ -277,8 +278,12 @@ bool Migration::runSqlFile(QString filename) {
             // HB9VQQ: ignore duplicate column errors (safe when upgrading from upstream)
             if (!query.lastError().databaseText().contains("duplicate column", Qt::CaseInsensitive))
             {
-                qCDebug(runtime) << query.lastError();
+                qWarning() << "HB9VQQ Migration SQL error:" << query.lastError().databaseText() << "query:" << sqlQuery.trimmed().left(200);
                 return false;
+            }
+            else
+            {
+                qWarning() << "HB9VQQ Migration: ignoring duplicate column in:" << sqlQuery.trimmed().left(100);
             }
         }
         query.finish();
